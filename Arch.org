@@ -1,0 +1,51 @@
+#+TITLE: Arch Linux
+#+DATE: <2021-11-02 二>
+* Basic operations about the pacman
+** 安装指定的包
+   - =pacman-S /package-names/ ..= 安装一个或者多个包
+   - =pacman -S $(pacman -Ssq package_regex)= 使用正则表达式来进行安装包
+   - =pacman -S extra/package_name=
+	 - 软件包有多个版本 *[extra] or [testing]*
+	 - 可以使用如上的命令来指定安装那个版本
+   - =pacman -S fcitx-{chinses-addons,im,pinyin-zhwiki}= 安装相似的包
+	 - /fcitx-chinese-addons,fcitx-im,fcitx-pinyin-zhwiki/
+   - 有个多层扩展，保险起见，不会这么写的
+** 虚包
+   虚拟软件包本身不存在，但是由一个或者多个软件包提供。
+   - =pacman -S gnome= gnome是一个虚包，里面有很多的包供你选择
+	 - _Enter a selection (default=all):_
+	   - =1-10 12= 选择1到10和第12个软件包进行下载。
+	   - =^3-5 ^12= 除了3到5和第12个软件包其他的包进行下载。
+   - =pacman -Sg plasma= 查看有那些包属于 *plasma*。
+** 删除软件包
+   - =pacman -R package-name= 删除单个软件包，保留全部安装的依赖关系。
+   - =pacman -Rs package-name= 删除指定软件包，及其所有没有被其他已安装软件包使用的依赖关系。
+   - 有时候有的包已经安装，再次使用 =pacman -S= 命令就是重新安装，可以使用选项 *--needed* 避免重新安装。
+   - 带 =Warning= 的选项对于新手不需要了解
+** 升级软件包
+   - =pacman -Syu= 升级系统。
+** 查询包数据库
+   + =-Q= 查询本地软件包数据库
+   + =-S= 查询同步数据库
+   + =-F= 查询文件数据库
+详情
+   - =pacman -Qs string= 查询已安装的软件包。
+   - =pacman -Ss string= 查询未安装但是存在仓库里的包。
+   - =pacman -Si package_name= 显示软件包的详细信息。
+   - =pacman -Qi package_name= 显示已经已安装软件包的详细信息。
+   - =pacman -Qii package_name= 显示文件修改信息。
+
+* Linux上格式化硬盘
+  对于我而言，卸载了Windows的情况下，每次安装完系统之后，需要格式化硬盘，在Linux上这个操作也是比较的简单。
+  - 使用命令 =sudo fdisk -l= 查看电脑的的硬盘分区情况，一般来说U盘都是在 =/dev/sdb= 。
+  - 找到所在分区 =/dev/sdb4= 然后使用如下命令。
+  - 卸载U盘所在分区 =/dev/sdb, /dev/sdb4= ，
+	#+begin_src shell
+umount /dev/sdb/
+	#+end_src
+  - 使用命令 ~mkfs.vfat~ 或者 ~mkfs.fat -F 32~ 把U盘变成FAT32的格式（常见的格式）。
+	#+begin_src shell
+mkfs.vfat /dev/sdb
+mkfs.fat -F 32 /dev/sdb4
+	#+end_src
+然后U盘格式化就成功了。

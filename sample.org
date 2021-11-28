@@ -1,0 +1,55 @@
+#+TITLE: Sample
+#+DATE: [2021-11-22 Mon 22:21]
+* Preface
+  这篇博客用来记录一些常见的命令，很杂可能，但是都是一些我常用但是又记不住的命令。
+  (学这个的最基本的就是，随用随查，然后记录一下，不得不说，写博客还是比较舒服的。)
+** tar
+   =tar= 命令是 =Linux= 上一种很常见的打包命令，首先需要了解到打包和压缩不是一种概念。
+   | 参数          | 含义                                                               |
+   |---------------+--------------------------------------------------------------------|
+   | =-x=          | 解包，解压缩的功能                                                 |
+   | =-v=          | 在压缩，解压缩的过程中，将正在处理的文件名显示出来                 |
+   | =-t=          | 查看打包文件的内容含有哪些文件                                     |
+   | =-z=          | 通过 =gzip= 的支持进行压缩，解压缩                                 |
+   | =-f filename= | 指定需要操作的文件                                                 |
+   | =-c=          | 建立打包文件                                                       |
+   | =-j=          | 通过 =bzip2= 的方式进行压缩，解压缩                                |
+   | =-r=          | 追加内容                                                           |
+   | =-p=          | extract information about file permissions (default for superuser) |
+*** 几条常用的命令
+	可以只打包，也可以打包的同时进行压缩
+	1. 解压缩包
+	   1. =tar -xzvf target.tar.gz=
+	   2. =tar -zjvf target.tar.bz2=
+	2. 打包，压缩包
+	   1. =tar -czvf target.tar.gz target=
+	   2. =tar -cjvf target.tar.bz2 target=
+	3. 解包
+	   1. =tar -xvf target.tar=
+	4. 打包
+	   1. =tar -cvf target.tar target=
+	5. 追加
+	   1. =tar -rvf target.tar test=
+*** 其他
+	有时候需要解压一下 =rar= 文件，Window 下常用的压缩文件，可以下载 [[https://wiki.archlinux.org/title/Rar_(%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87)#%E5%AE%89%E8%A3%85][unrar]] 进行操作
+** ln （这个算了，查了一下，不是我想要的那种效果）
+*** 软链接
+*** 硬链接
+** GTK和QT
+   当你装 =fcitx= 输入法的时候，你会了解到当你需要在一些 =GTK+或者QT= 程序中使用中文输入法的时候，需要添加一些额外的变量。
+   可是也会疑惑啥是 =GTK和QT= ，原来我也疑惑，最近查了一查，下面这两篇文章简单易懂
+   - [[https://unix.stackexchange.com/questions/129355/what-is-difference-between-gtk-and-qt-applications][the difference between GTK and QT]]
+   - [[https://qastack.cn/ubuntu/85144/whats-the-difference-between-gtk-and-qt][GTK和QT的区别]]
+** Dpi
+   [[https://zh.wikipedia.org/wiki/%E6%AF%8F%E8%8B%B1%E5%AF%B8%E7%82%B9%E6%95%B0][dpi]]
+** Jupyter notebook
+   由于我主要用的浏览器是 =chromium= ，不希望 =jupter notebook= 在一个浏览器打开，所以设置一下在firefox中打开。
+   1. 使用命令 =jupyter notebook --generate-config= 生成配置文件。（会给出配置文件的地址）
+   2. 打开配置文件，找到 =#c.NotebookApp.browser = ""= 去掉注释，并且添加 =firefox= 的地址。（使用命令 =which firefox= ）
+   3. 重新打开就是了
+   4. [[https://jupyter-notebook.readthedocs.io/en/stable/config_overview.html][参考链接]]
+** DWM 下 Emacs 无法全部展开
+   参考[[https://emacs-china.org/t/emacs-dwm/14546][emacs-china]]，把 =dwm-6.2= 目录下的 =config.h= 对应条目进行修改就行了
+   #+begin_src shell
+static const int resizehints = 0; # 1 -> 0
+   #+end_src

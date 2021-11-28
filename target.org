@@ -1,0 +1,8 @@
+#+TITLE: Target
+#+DATE:[2021-11-23 Tue 07:42]
+* Preface
+  这篇博客用来记录我的短期小目标
+** pyqt5
+** matplotlib
+** LaTeX
+** Elisp（长期的目标）

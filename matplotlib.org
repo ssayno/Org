@@ -1,0 +1,339 @@
+#+TITLE: matplotlib的学习笔记
+#+DATE: [2021-11-24 Wed 10:59]
+* 这篇博客记录学习 matplotlib 的笔记
+  最近心血来潮，想起来了 =python= ，重新了解一下，首先就把基础的画图进行了解一下。我学习 =matplotlib= 主要来自这个网站 [[https://matplotlib.org/][matplotlib.org]]。
+  以后估计还会搞一手 =Django= 来做一手 web 开发，这是我一直想要学的东西。
+  #+begin_export html
+<!-- more -->
+  #+end_export
+** lifecycle
+   对于我来说，我不是很喜欢 =MATLAB= 风格的画图方式，所以我一般都是采用面向对象的接口来进行画图操作
+   #+begin_src python :results file
+import matplotlib
+import matplotlib.pyplot as plt
+import numpy as np
+X = np.linspace(0, 4*np.pi, 200)
+Y = np.tan(X)
+fig, ax = plt.subplots()
+ax.plot(X, Y)
+ax.set_title("Lifecycle")
+ax.set_xlabel("X Labels")
+ax.set_ylabel("Y Labels")
+plt.tight_layout()
+plt.savefig("result.svg")
+return("result.svg")
+   #+end_src
+
+   #+RESULTS:
+   [[file:result.svg]]
+
+
+   所以说有些操作还是比较有意思
+
+   - =plt.style.available= 可以查看支持的主题，我的 emacs 用的是 =solarized-gruvbox-dark= ,所以 =Solarize_Light2= 适合我使用。<<style>>
+   - =fig.canvas.get_supported_filetypes()= 查看支持保存的图片的格式。
+** customize
+   可以自己定义 matplotlib 显示图案的样式。
+   =import matplotlib as mpl= ，接着就是使用 =mpl.rcParams[]= 一个接着一个定义，或者 =mpl.rc()= 一起定义
+   #+begin_src python :results file
+import matplotlib.pyplot as plt
+import matplotlib as mpl
+import numpy as np
+mpl.rcParams['lines.linewidth']=2
+mpl.rcParams['lines.linestyle']='--'
+data = np.random.randn(40)
+# or
+# mpl.rc('lines', linewidth=4, linestyle="-")
+# plt.plot(data)
+plt.plot(data)
+plt.savefig("e.svg")
+return("e.svg")
+   #+end_src
+
+   #+RESULTS:
+   [[file:e.svg]]
+   最主要的还是可以进行局部改变进行画图
+   #+begin_src python
+with mpl.rc_context({"lines.linewidth": 3, "lines.linestyle": "-"}):
+    plt.plot(data)
+# 搞个装饰器
+@mpl.rc_context({'lines.linewidth': 3, 'lines.linestyle': '-'})
+def plotting_function():
+    plt.plot(data)
+
+plotting_function()
+   #+end_src
+   上面的代码所获得的结果是一模一样的。
+   你也是可以通过 [[style]] 进行更改，有意思的是可以进行混合的，比如
+   #+begin_src python
+plt.style.use["Solarize_Light2", "dark_background"]
+   #+end_src
+
+** 今天学习在 matplotlib 中进行部分 LaTeX 的渲染 [2021-11-26 Fri 15:33]
+   首先需要明确的是， =python= 中会对一些字符识别为转义字符，所以你需要防止转义。
+   例如 =plt.title(r"$\tan x > \beta$")= ，不加的话， =\tan= 就会被识别为 =\t= 制表符。
+   =r$\frac{a}{b}$= ，emacs 的 org-mode 可以与 cdlatex hook。
+   #+begin_src emacs-lisp
+(add-hook 'org-mode-hook 'org-cdlatex-mode)
+   #+end_src
+   这样在 org-mode 中输入的时候就可以使用 cdlatex 对于 LaTeX 的补全了。对于这些，如果你会一些 LaTeX，这些还是很简单的，一通百通莫如是也。
+   #+begin_src emacs-lisp
+;; 由于我使用的 emacs 中的 ein 作为 jupyter notebook
+;; 所以可以绑定 cdlatex 到 ein 使输入数学符号更加方便
+(add-hook 'ein-mode-hook 'cdlatex-mode)
+;; 这个没有用
+   #+end_src
+*** LaTeX with matplotlib
+	如果想要使用 =XeLaTeX 或者 LuaLaTeX= 渲染图片，这里有三种方式
+	- =matplotlib.use("pdf")=
+	- ~plt.savefig("result.pdf", backend='pgf')~
+	-
+	#+begin_src python
+from matplotlib.backends.backend_pgf import FigureCanvasPgf
+matplotlib.backend_bases.register_backend('pdf', FigureCanvasPgf)
+	#+end_src
+	最主要的是你可以像写 LaTeX 一样，写入导言区，
+	#+begin_src python :results file
+import matplotlib as mpl
+mpl.use("pgf")
+import matplotlib.pyplot as plt
+plt.rcParams.update({
+    "font.family": "regular",
+    "text.usetex": True,
+    "pgf.preamble": "\n".join([
+        r"\usepackage{url}",
+        r"\usepackage{unicode-math}",
+        r"\setmainfont{Sarasa Mono SC}"
+    ])
+})
+fig, ax = plt.subplots(figsize=(4.5, 2.5))
+
+ax.plot(range(5))
+
+ax.set_xlabel("unicode text: я, ψ, €, ü")
+ax.set_ylabel(r"\url{https://matplotlib.org}")
+ax.legend(["unicode math: $λ=∑_i^∞ μ_i^2$"])
+
+fig.tight_layout(pad=.5)
+plt.savefig("pgf.pdf")
+return "pgf.pdf"
+	#+end_src
+
+	#+RESULTS:
+	[[file:pgf.pdf]]
+	同样可以制定 编译器
+	- ~XeLaTeX~
+	- ~PdfLaTeX~
+	- ~LuaLaTeX~
+	  #+begin_src python :results file
+import matplotlib as mpl
+mpl.use("pgf")
+import matplotlib.pyplot as plt
+plt.rcParams.update({
+    "font.family": "serif",
+    "text.usetex": True,
+    "pgf.texsystem": "xelatex",  # default is xelatex
+    "pgf.preamble": "\n".join([
+        r"\usepackage{url}",
+        r"\usepackage{unicode-math}",
+        r"\setmainfont{DejaVu Serif}"
+    ])
+})
+# plt.rcParams['font.family']=['Sarasa Mono SC']
+fig, ax = plt.subplots(figsize=(4.5, 2.5))
+
+ax.plot(range(5))
+
+ax.set_xlabel("哈哈哈哈unicode text: я, ψ, €, ü")
+ax.set_ylabel(r"\url{https://matplotlib.org}")
+ax.legend(["unicode math: $λ=∑_i^∞ μ_i^2$"])
+
+fig.tight_layout(pad=.5)
+plt.savefig("pgf2.pdf")
+return "pgf2.pdf"
+	  #+end_src
+
+	  #+RESULTS:
+	  [[file:pgf2.pdf]]
+	  使用 LaTeX 来渲染文本 ~plt.rcParams["text.usetex"]=True~ ， *值得注意的是，当使用 LaTeX 渲染文本的时候，则需要注意 LaTeX 的特殊字符了* 。
+	  #+begin_src python :results file
+import numpy as np
+import matplotlib.pyplot as plt
+plt.rcParams['text.usetex'] = True
+
+t = np.linspace(0.0, 1.0, 100)
+s = np.cos(4 * np.pi * t) + 2
+
+fig, ax = plt.subplots(figsize=(6, 4), tight_layout=True)
+ax.plot(t, s)
+
+ax.set_xlabel(r'\textbf{time (s)}')
+ax.set_ylabel('\\textit{Velocity (\N{DEGREE SIGN}/sec)}', fontsize=16)
+ax.set_title(r'\TeX\ is Number $\displaystyle\sum_{n=1}^\infty'
+             r'\frac{-e^{i\pi}}{2^n}$!', fontsize=16, color='r')
+plt.savefig("pgf3.pdf")
+return "pgf3.pdf"
+	  #+end_src
+
+	  #+RESULTS:
+	  [[file:pgf3.pdf]]
+	  #+begin_src python :results file
+import matplotlib.pyplot as plt
+from mpl_toolkits.axes_grid1 import host_subplot
+import numpy as np
+
+ax = host_subplot(111)
+xx = np.arange(0, 2*np.pi, 0.01)
+ax.plot(xx, np.sin(xx))
+
+ax2 = ax.twin()  # ax2 is responsible for "top" axis and "right" axis
+ax2.set_xticks([0., .5*np.pi, np.pi, 1.5*np.pi, 2*np.pi],
+               labels=["$0$", r"$\frac{1}{2}\pi$",
+                       r"$\pi$", r"$\frac{3}{2}\pi$", r"$2\pi$"])
+
+ax2.axis["right"].major_ticklabels.set_visible(False)
+ax2.axis["top"].major_ticklabels.set_visible(True)
+plt.savefig("pgf4.pdf")
+return "pgf4.pdf"
+	  #+end_src
+
+	  #+RESULTS:
+	  [[file:]]
+*** Customizing Figure Layouts Using GridSpec and Other Functions [2021-11-27 Sat 10:45]
+今天学习一下定制面向对象方式画图的定制。首先会是 ~grid~ 排列，这个在每个画图语言里面都是非常常见的。用 =python= 来操作还是比较的简单。
+*绘制多子图的时候，使用命令 ~plt.subplots_adjust(hspace=0.4, wspace=0.4)~ 来调整子图之间的距离* ，同时，在 =gridspec= 中能够直接使用
+=hspace and wspace= 来调整的，但是在 ~plt.subplots()~ 没有这个参数，所以不能够直接使用。
+**** 第一种
+#+begin_src python :results file
+import matplotlib.pyplot as plt
+import numpy as np
+fig1, f1_axes = plt.subplots(ncols=2, nrows=2, constrained_layout=True)
+X = np.linspace(-2, 3, 30)
+Y = np.sin(X) / X
+# 由于创建的多维度数组，返回的多维度 numpy 数组，所以你要自己去识别
+f1_axes[0][0].plot(X, Y)
+f1_axes[1][1].plot(X, Y * X)
+plt.savefig("one.pdf")
+return "one.pdf"
+#+end_src
+
+#+RESULTS:
+[[file:]]
+下面搞个单维度
+#+begin_src python :results file
+import matplotlib.pyplot as plt
+import numpy as np
+fig1, f1_axes = plt.subplots(ncols=2, nrows=1, constrained_layout=True)
+X = np.linspace(-2, 3, 30)
+Y = np.sin(X) / X
+# 由于创建的多维度数组，返回的多维度 numpy 数组，所以你要自己去识别
+f1_axes[0].plot(X, Y)
+f1_axes[1].plot(X, Y * X)
+plt.savefig("two.pdf")
+return "two.pdf"
+#+end_src
+
+#+RESULTS:
+[[file:two.pdf]]
+通过上面两个例子，可以知道，如果指定了多行和多列，那么则是多维度 numpy 数组，要按照多维度的数组去指定。
+**** 第二种
+使用 ~gridspec~ ，这种方式厉害的是可以实现跨行或者跨列的图。不过前提是多导入一个 ~import matplotlib.gridspec as gridspec~
+#+begin_src python :results file
+import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
+fig = plt.figure(constrained_layout=True)
+spec = gridspec.GridSpec(ncols=2, nrows=2, hspace=0.5, wspace=0.5, figure=fig)
+print(type(spec))
+fig_ax1 = fig.add_subplot(spec[0, 0])
+fig_ax2 = fig.add_subplot(spec[0, 1])
+fig_ax3 = fig.add_subplot(spec[1, 0])
+fig_ax4 = fig.add_subplot(spec[1, 1])
+plt.savefig("three.pdf")
+return "three.pdf"
+#+end_src
+
+#+RESULTS:
+[[file:three.pdf]]
+值得注意的是，使用的 numpy 数组的内容的获取，我估摸着是内部是 numpy 数组。\\
+更厉害的， ~gridspec~ 可以有个更简便的方式，还可以合成跨行或者跨列的图片。（用这种方式，还不要导入 ~import matplotlib.gridspec as gridspec~ ）
+#+begin_src python :results file
+import matplotlib.pyplot as plt
+fig = plt.figure(constrained_layout=True)
+# fig.subplots_adjust(hspace=0.8,  wspace=0.4)
+spec = fig.add_gridspec(3, 3)
+fig_ax1 = fig.add_subplot(spec[0, :2])
+fig_ax1.set_title("spec[0, :2]")
+fig_ax2 = fig.add_subplot(spec[:2, 2])
+fig_ax2.set_title("spec[:2, 2]")
+fig_ax3 = fig.add_subplot(spec[1: , :2])
+fig_ax3.set_title("spec[1:, :2]")
+fig_ax4 = fig.add_subplot(spec[-1, -1])
+fig_ax4.set_title("spec[-1, -1]")
+plt.savefig("four.pdf")
+return "four.pdf"
+#+end_src
+
+#+RESULTS:
+[[file:four.pdf]]
+但是我从书上也看见一种
+#+begin_src python :results file
+import matplotlib.pyplot as plt
+fig = plt.figure(constrained_layout=True)
+spec =plt.GridSpec(ncols=2, nrows=2, figure=fig)
+print(type(spec))
+fig_ax1 = fig.add_subplot(spec[0, 0])
+fig_ax2 = fig.add_subplot(spec[0, 1])
+fig_ax3 = fig.add_subplot(spec[1, 0])
+fig_ax4 = fig.add_subplot(spec[1, 1])
+plt.savefig("five.pdf")
+return "five.pdf"
+#+end_src
+
+#+RESULTS:
+[[file:five.pdf]]
+基本的子图的划分就是这样了，当需要更加复杂的案例的时候，可以查阅 [[https://matplotlib.org/stable/tutorials/intermediate/gridspec.html][matplotlib.org]] 来了解，案例十分充足。
+*** Constrained Layout Guide [2021-11-27 Sat 12:18]
+两种方式使用这个布局
+- ~fig=plt.figure(constrained_layout=True)~
+- ~plt.rcParams["figure.constrained_layout.use"]=True~
+
+  下面给出一个例子。
+  #+begin_src python :results file
+import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
+import matplotlib.gridspec as gridspec
+import numpy as np
+import time
+
+
+plt.rcParams['savefig.facecolor'] = "0.5"
+plt.rcParams['figure.figsize'] = 4.5, 4.
+plt.rcParams['figure.max_open_warning'] = 50
+
+
+def example_plot(ax, fontsize=12, hide_labels=False):
+    ax.plot([1, 2])
+
+    ax.locator_params(nbins=3)
+    if hide_labels:
+        ax.set_xticklabels([])
+        ax.set_yticklabels([])
+        plt.save("six.pdf")
+    else:
+        ax.set_xlabel('x-label', fontsize=fontsize)
+        ax.set_ylabel('y-label', fontsize=fontsize)
+        ax.set_title('Title', fontsize=fontsize)
+
+fig, ax = plt.subplots(constrained_layout=True)
+example_plot(ax, fontsize=24)
+plt.show()
+time.sleep(1)
+plt.close("all")
+plt.savefig("six.pdf")
+return "six.pdf"
+  #+end_src
+
+  #+RESULTS:
+  [[file:six.pdf]]
+  总的来说吧，就是 ~constrained_layout=True~ 可以防止出现 label 显示不全，当有多子图的时候，可以是自动调整间距。
+  好了，今天的 ~matplotlib~ 就到此为止了。

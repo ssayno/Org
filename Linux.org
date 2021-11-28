@@ -1,0 +1,127 @@
+#+TITLE: Linux 三剑客
+#+DATE: [2021-11-26 Fri 22:25]
+* Preface
+这篇博客记录学习 Linux 三剑客的操作
+** grep
+~grep~ 这个玩意我还是用的比较多的，基于 =shell= 的正则语法表达式，我还是比较喜欢的。从 12 月前，我会尽量的详细的了解这些基础的命令。
+
+** sed (stream editor)
+说实话啊，对于 =sed= ，我平常都没有用过，也没有去了解过。
+Linux sed 命令是利用脚本来处理文本文件，逐行进行处理。
+两种方式：
+- 和 *管道命令* 进行配置使用， =stdout | sed [option] "pattern command"=
+- 操作文件 =sed [option] "pattern command" file=
+- 用单引号包裹命令
+- =sed= 文件的后缀名为 ~.sed~
+- sed 的 option 不支持合并一起写
+一般来说， =sed= 不会改变原文件，下面是一些常见的 ~[option]~
+| 选项 | 含义                                           |
+|------+------------------------------------------------|
+| ~-n~ | 只打印模式匹配行，sed 默认会输出文件的所有内容 |
+| ~-e~ | 直接在命令行中进行 sed 编辑，默认选项          |
+| ~-f~ | 编辑动作保存在文件之中，指定文件执行           |
+| ~-r~ | 支持拓展的正则表达式                           |
+| ~-i~ | 直接修改文件内容                               |
+#+begin_src shell
+sed -n '/python/p' sed.txt 		# 匹配只有python的行
+sed -n -e '/python/p' -e '/PYTHON/p' sed.txt # 当需要匹配多个的时候，需要每个都加上 ~-e~
+# 一个简单的方法
+sed -n -r '/python|PYTHON/p' sed.txt # 一种拓展的正则表达式
+# 替换
+sed -n 's/love/like/g;p' sed.txt
+sed -n -i 's/love/like/g;p' sed.txt
+# 行前添加
+sed -i '/python/a This is a test' sed.txt
+# 文件的插入 将 test.py 的内容添加到指定的地方。
+sed -i '/python/r ./test.py' sed.txt
+# 将 sed.txt 中匹配的行存入 /tmp/temp
+sed '/python/w /tmp/temp' sed.txt
+# 替换每行的第一个
+sed -i 's/python/java/' sed.txt
+#+end_src
+
+#+RESULTS:
+| I      | like | python |      |
+| I      | like | python |      |
+| I      | like | PYTHON |      |
+| I      | like | python |      |
+| I      | like | PYTHON |      |
+| I      | like | python |      |
+| This   | is   | a      | test |
+| This   | is   | a      | test |
+| I      | like | PYTHON |      |
+| Hadoop | is   | good   |      |
+| I      | like | python |      |
+| This   | is   | a      | test |
+| This   | is   | a      | test |
+| This   | is   | a      | test |
+| I      | like | PYTHON |      |
+| Hadoop | is   | good   |      |
+
+*** pattern 用法表
+| 匹配模式                     | 含义                                                 |
+|------------------------------+------------------------------------------------------|
+| 10command                    | 匹配第十行                                          |
+| 10,20command                 | 匹配从第十行到第二十行                               |
+| 10,+5command                 | 匹配从第十行，在加五行                               |
+| /pattern1/command            | 匹配到 pattern1 的行                                 |
+| /pattern1/,/pattern2/command | 匹配到 pattern1 的行开始，到匹配到 pattern2 的行结束 |
+| 10,/pattern1/command         | 混合前面的两种                                              |
+sed 中对于特殊字符可以转义。
+*** 编辑命令详解
+- 删除的时候，就不要加 =-n=
+#+BEGIN_EXPORT html
+<table border="1">
+  <tr>
+    <th>类别</th>
+    <th>编辑命令</th>
+    <th>含义</th>
+  </tr>
+  <tr>
+    <th>删除</th>
+	<th>d</th>
+	<th>删除</th>
+  </tr>
+  <tr>
+    <td rowspan="4">修改</td>
+    <td>s/old/new</td>
+    <td>将行内第一个 old 替换为 new</td>
+  </tr>
+  <tr>
+    <td>s/old/new/g</td>
+    <td>将行内所有的 old 替换为 new</td>
+  </tr>
+  <tr>
+    <td>s/old/new/2g</td>
+    <td>将行内前两个 old 替换为 new</td>
+  </tr>
+  <tr>
+    <td>s/old/new/ig</td>
+    <td>将行内所有的 old 替换为 new，同时忽略大小写</td>
+  </tr>
+  <tr>
+    <th>查询</th>
+    <th>p</th>
+    <th>打印</th>
+  </tr>
+  <tr>
+    <td rowspan=4>增加</td>
+	<td>a</td>
+	<td>行后追加</td>
+  </tr>
+  <tr>
+    <td>i</td>
+	<td>行前追加</td>
+  </tr>
+  <tr>
+    <td>r</td>
+	<td>外部文件读入，行后追加</td>
+  </tr>
+  <tr>
+    <td>w</td>
+	<td>匹配行写入外部文件</td>
+  </tr>
+</table>
+#+end_export
+** awk
+~awk~ 这个玩意我听说的还是比较多的，但是基本没有用过。对于 ~awk~ 使用单引号 =''= 来进行语句的编写。先来个[[https://www.gnu.org/software/gawk/manual/gawk.html#Foreword3][awk 的官方手册]]，可以去看看。

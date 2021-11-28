@@ -1,0 +1,97 @@
+#+TITLE: Config
+#+DATE: [2021-11-16 Tue 18:26]
+* Preface
+  This is for my own configuration. When I use the DWM in my Arch Linux.
+** DWM
+   首先 DWM 的窗口有三种窗口的排列方式
+   - 浮动模式 :: =Mod+F=
+   - 单页模式 :: =Mod+M=
+   - 平铺模式 :: =Mod+T=
+   对于这三种方式，在同一个窗口多打开几个软件，你就清楚了他们的区别，不过我使用 emacs 的话，这里部分和 emacs 基础键位冲突了。可以去 =config.h= 修改，添加前缀 =shift= 。
+   记录 DWM 下基础且常用的快捷键
+   | shortcut          | function                                                   |
+   |-------------------+------------------------------------------------------------|
+   | =Shift+Mod+C=     | 关闭一个软件窗口                                           |
+   | =Shift+Mod+Enter= | 打开一个虚拟终端                                           |
+   | =Mod+D=           | 纵向排列 (Tile)                                            |
+   | =Mod+I=           | 横向排列 (Tile)                                            |
+   | =Mod+Enter=       | 交换窗口位置（一个窗口打开多个软件）                       |
+   | =Mod+J=           | 窗口位置互换                                               |
+   | =Mod+K=           | 窗口位置互换，区别看 ~config.h~                            |
+   | =Mod+H=           | 减少当前窗口大小，由于和 Emacs 冲突，我给他添加了前缀      |
+   | =Mod+L=           | 增加当前窗口大小                                           |
+   | =Mod+space=       | 切换窗口模式（Tile 和 monocle）                            |
+   | =Shift+Mod+space= | 切换到浮动的窗口模式                                       |
+   | =Mod+>=           | 焦点移动                                                   |
+   | =Mod+<=           | 焦点移动 （不过这两个功能和 emacs 重复，所以我禁用了他们） |
+   | =Mod+num=         | 切换到某个标签页                                           |
+   | =Shift+Mod+num=   | 切换当前窗口到某个标签页                                   |
+   这样基本常用的快捷键就完了。
+   Linux 上使用 flameshot 作为截图工具，我配置为 PrtSc 作为快捷键。
+   #+begin_src c
+static const char *flameshot[] = { "flameshot", "gui", NULL };
+/* 然后添加到合适的位置 */
+{0,                             XK_Print,  spawn,          {.v = flameshot}},
+   #+end_src
+** tmux
+   [[https://wiki.archlinux.org/title/Tmux_(%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87)][Tmux]] 是一个终端复用工具，就是再次进入 tmux 会返回到上一次的界面，具体的信息看 [[https://wiki.archlinux.org/title/Tmux_(%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87)][wiki]]。
+   主要的原因还是 tmux 用了 emacs 键位， =tmux show-options -g | grep key= 查看键位，结果应该是这样 =status-keys emacs= 。
+*** autostart
+	zsh 有一个插件就是叫做 [[https://github.com/ohmyzsh/ohmyzsh/tree/master/plugins/tmux][tmux]] ，有个选项 =ZSH_TMUX_AUTOSTART= 设置为 =true= 当打开 zsh 自己启动 tmux，但是如果你使用 DWM 的话，使用 =startx= 启动话，会带来一些麻烦，
+	你可以试试，所以可以使用基础的 =shell= 来实现，首先需要在 =~/.xinitrc= 中设置一个全局变量 =export DWM=dwm= 。
+	#+begin_src shell
+if [ -z "$TMUX" ] && [ -n "$DWM" ]
+then
+    tmux attach -t AliasZ || tmux new -s AliasZ
+fi
+	#+end_src
+	这样就能够实现简单的自启动。
+*** basic operation
+	我把 tmux 的键位前缀改为了 =C-s= ， 对于 tmux 基本的操作，可以使用 =C-s ?= 查看一些基本操作
+	- Window :: about the window
+	  - =tmux new -s $session_name= 创建一个新的 session。
+	  - =C-s c= 创建新的 window
+	  - =C-s &= 删除一个 window
+	  - =C-s C-n= 下一个 window
+	  - =C-s C-p= 上一个 window
+	  - =C-s ,= 重命名窗口
+	  - =C-s l= 相邻的两个窗口切换
+	  - =C-s f= 查找window
+	- Pane :: about the pane
+	  - =C-s "= 水平划分
+	  - =C-s %= 竖直划分
+	  - =C-s o= 在 pane 中来回切换
+	  - =C-s w= 列出所有 window
+	- =C-s d= 暂时退出 session
+	关于这些快捷键，[[http://yangfangs.github.io/wiki/2020-4-12-tmux-shortcut-key/][here]]。
+** ranger
+   一个终端文件管理器，比较好用
+** rofi
+   DWM 下用来代替 dmenu 的菜单搜索工具，但是我现在还是用回了 dmenu。
+** Touchpad
+   我非常不喜欢使用触摸板，所以这里书写如何禁用触摸板
+   #+begin_src shell
+xinput list
+# 产看触摸板是那个 一般来说是十三
+xinput disable 13
+   #+end_src
+   对于 DWM 而言，直接在 =~/.xinitrc= 中写入 =xinput disable 13 &= 就可以了，这样如果以后需要的时候直接注释就行
+*** Touchpad Synaptics
+	在 Arch Linux 上有个专门的包 [[https://wiki.archlinux.org/title/Touchpad_Synaptics_(%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87)][Touchpad Synaptics]] 来解决这个问题，不过我觉得对我来说太麻烦，我只要全局禁用触摸板就行了。
+** Set default software
+   *默认的文件打开配置都是在 =~/.config/mimeapps.list=* \\
+   在 =DWM= 中，基本都是命令行操作，有些问题需要自己来解决，比如说默认的 =pdf= 阅读器就是浏览器，这个很不爽。我使用的是 =mupdf= 作为pdf阅读器。
+   使用 =feh= 作为图像查看器。
+   #+begin_src shell
+# 查看 pdf 格式，一般来说都是用这条命令来查看，再去设置
+xdg-mime query filetype book.pdf
+# 设置默认 pdf 阅读器
+xdg-mime default mupdf.desktop application/pdf
+# 但是 python 就是有点不一样的
+xdg-mime defualt pycharm.desktop text/x-python
+   #+end_src
+** Chrome 快捷键
+   [[https://www.runoob.com/w3cnote/google-chrome-shortcuts.html][Runoob]]
+** 如果单单是想要在 org-mode 中显示 pdf 图片，可以使用 package ~org-inline0-pdf~ ，图片会失真，但是保存的还是 pdf 图片，显示失真不影响。
+- =yay -S pdf2svg=
+- ~(add-hook 'org-mode-hook #'org-inline-pdf-mode)~

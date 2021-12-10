@@ -2,41 +2,11 @@
 #+DATE: [2021-11-26 Fri 19:55]
 * Preface
   这篇博客用来记录重新学习 shell 的随笔，不系统，只是自己以前没有注意的。
-** 对于 shell 中的或、且、非
-   |       | 或         | 且   | 非  |
-   |-------+------------+------+-----|
-   | C     | \vert\vert | =&&= | =!= |
-   | Other | ~-o~       | ~-a~ | ~!~ |
-下面是一个很好的例子，对于逻辑运算符的基本使用。
 #+begin_src shell
-#!/bin/bash
-a=3
-b=2
-echo "${a}, ${b}"
-if [ $a -eq 3 ] && [ $b -eq 3 ]
-then
-	echo "yes"
-else
-	echo "no"
-fi
-# if [ $a == 1 -a $b == 2 ]
-# then
-# 	echo "yes"
-# else
-# 	echo "no"
-# fi
-if [ $a -eq 3 ]
-then
-	echo "a 等于 b"
-else
-	echo "no"
-fi
-if [ a -eq 3]
-then
-	
+echo "怎么变颜色了"
 #+end_src
 
 #+RESULTS:
-| 3, |    2 |   |
-| no |      |   |
-| a  | 等于 | b |
+: 怎么变颜色了
+
+

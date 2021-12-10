@@ -1,11 +1,47 @@
-#+TITLE: Linux 三剑客
+ #+TITLE: Linux
 #+DATE: [2021-11-26 Fri 22:25]
+#+STARTUP: show2levels
 * Preface
 这篇博客记录学习 Linux 三剑客的操作
 ** grep
 ~grep~ 这个玩意我还是用的比较多的，基于 =shell= 的正则语法表达式，我还是比较喜欢的。从 12 月前，我会尽量的详细的了解这些基础的命令。
+| 选项 | 含义                                    |
+|------+-----------------------------------------|
+| -E   | 就是 egrep，支持扩展正则表达式          |
+| -A   | 显示匹配到的后面几列的内容              |
+| -B   | 显示的前几行                            |
+| -C   | 显示的上下几行                          |
+| -c   | 统计出现的行数，类似 ~wc -l~            |
+| -v   | 显示不匹配的行                          |
+| -n   | 显示行号                                |
+| -i   | 忽略大小写                              |
+| -w   | 精确匹配（如同 emacs 中的有无边界搜索） |
+#+begin_src shell
+cd ~/Org
+cp /etc/passwd .
+grep -C5 'sayno' passwd
+grep -c "sayno" passwd
+echo "出现的次数"
+grep -c "nologin" passwd
+#+end_src
 
-** sed (stream editor)
+#+RESULTS:
+| systemd-timesync:x:977:977:systemd                 | Time                      | Synchronization:/:/usr/bin/nologin        |
+| systemd-coredump:x:976:976:systemd                 | Core                      | Dumper:/:/usr/bin/nologin                 |
+| uuidd:x:68:68::/:/usr/bin/nologin                  |                           |                                           |
+| avahi:x:975:975:Avahi                              | mDNS/DNS-SD               | daemon:/:/usr/bin/nologin                 |
+| dhcpcd:x:974:974:dhcpcd                            | privilege                 | separation:/:/usr/bin/nologin             |
+| sayno:x:1000:984::/home/sayno:/usr/bin/zsh         |                           |                                           |
+| polkitd:x:102:102:PolicyKit                        | daemon:/:/usr/bin/nologin |                                           |
+| rtkit:x:133:133:RealtimeKit:/proc:/usr/bin/nologin |                           |                                           |
+| nvidia-persistenced:x:143:143:NVIDIA               | Persistence               | Daemon:/:/usr/bin/nologin                 |
+| lightdm:x:973:973:Light                            | Display                   | Manager:/var/lib/lightdm:/usr/bin/nologin |
+| git:x:972:972:git                                  | daemon                    | user:/:/usr/bin/git-shell                 |
+| 1                                                  |                           |                                           |
+| 出现的次数                                         |                           |                                           |
+| 21                                                 |                           |                                           |
+
+** sed (stream editor)<<sed>>
 说实话啊，对于 =sed= ，我平常都没有用过，也没有去了解过。
 Linux sed 命令是利用脚本来处理文本文件，逐行进行处理。
 两种方式：
@@ -123,5 +159,255 @@ sed 中对于特殊字符可以转义。
   </tr>
 </table>
 #+end_export
-** awk
+*** 使用 sed 命令进行查询特定的内容
+查询命令就是常见的 pattern 和 =p= 结合使用，主要的就是了解一下正则表达式
+*然后关于 sed 的基础就完了，当需要的时候查询，进行学习就 ok 了*
+** awk (文本分析和处理工具)
+*** 工具简介
+awk 是一种解析式编程语言，非常强大，都是用来进行文本处理，awk 和 sed 一样都是行处理，但是 awk 比 sed 更强
+*awk 中输出单引号 ~'~ ，命令如下 ~'\''~ *
 ~awk~ 这个玩意我听说的还是比较多的，但是基本没有用过。对于 ~awk~ 使用单引号 =''= 来进行语句的编写。先来个[[https://www.gnu.org/software/gawk/manual/gawk.html#Foreword3][awk 的官方手册]]，可以去看看。
+| 名词                                 | awk 中叫法     | 一些说明               |
+|--------------------------------------+----------------+------------------------|
+| 行                                   | 记录 record    | 每一行默认通过回车分割 |
+| 列                                   | 字段，域 field | 每一列默认通过空格分割 |
+| awk 中行和列的结束标记都是可以修改的 |                |                        |
+*** awk 取行
+| awk                               |                    |
+|-----------------------------------+--------------------|
+| NR==1                             | 取出第一行         |
+| NR>=1 && NR<=5                    | 取出 1 到 5 行范围 |
+| 同时可以使用和 sed 一样的模式匹配 |                    |
+*** awk 取列
+- ~-F~ 指定分隔符
+- ~$num~ 表示取出第几列，这个在 ~awk~ 中比较单纯
+- ~$0~ 取出整行的内容
+- ~{print $1,"|"$NF}~ 添加分割符号
+- ~$NF~ 表示最后一列
+#+begin_src shell
+cd ~/Org
+awk -F: '{print $NF":"$2":"$3":"$4":"$5":"$6":"$1}' passwd
+# 或者一个更加简单的方法，指定输出字符
+awk -v FS=: -v OFS=: '{print $NF,$2,$3,$4,$5,$6,$1}' passwd
+# 提取 ip 地址
+ip a s wlan0 | awk -F"[ /]+" 'NR==3{print $3}' # 采用了正则表达式
+#+end_src
+
+#+RESULTS:
+| /bin/bash:x:0:0::/root:root                        |                            |                                    |                      |
+| /usr/bin/nologin:x:1:1::/:bin                      |                            |                                    |                      |
+| /usr/bin/nologin:x:2:2::/:daemon                   |                            |                                    |                      |
+| /usr/bin/nologin:x:8:12::/var/spool/mail:mail      |                            |                                    |                      |
+| /usr/bin/nologin:x:14:11::/srv/ftp:ftp             |                            |                                    |                      |
+| /usr/bin/nologin:x:33:33::/srv/http:http           |                            |                                    |                      |
+| /usr/bin/nologin:x:65534:65534:Nobody:/:nobody     |                            |                                    |                      |
+| /usr/bin/nologin:x:81:81:System                    | Message                    | Bus:/:dbus                         |                      |
+| /usr/bin/nologin:x:981:981:systemd                 | Journal                    | Remote:/:systemd-journal-remote    |                      |
+| /usr/bin/nologin:x:980:980:systemd                 | Network                    | Management:/:systemd-network       |                      |
+| /usr/bin/nologin:x:979:979:systemd                 | Userspace                  | OOM                                | Killer:/:systemd-oom |
+| /usr/bin/nologin:x:978:978:systemd                 | Resolver:/:systemd-resolve |                                    |                      |
+| /usr/bin/nologin:x:977:977:systemd                 | Time                       | Synchronization:/:systemd-timesync |                      |
+| /usr/bin/nologin:x:976:976:systemd                 | Core                       | Dumper:/:systemd-coredump          |                      |
+| /usr/bin/nologin:x:68:68::/:uuidd                  |                            |                                    |                      |
+| /usr/bin/nologin:x:975:975:Avahi                   | mDNS/DNS-SD                | daemon:/:avahi                     |                      |
+| /usr/bin/nologin:x:974:974:dhcpcd                  | privilege                  | separation:/:dhcpcd                |                      |
+| /usr/bin/zsh:x:1000:984::/home/sayno:sayno         |                            |                                    |                      |
+| /usr/bin/nologin:x:102:102:PolicyKit               | daemon:/:polkitd           |                                    |                      |
+| /usr/bin/nologin:x:133:133:RealtimeKit:/proc:rtkit |                            |                                    |                      |
+| /usr/bin/nologin:x:143:143:NVIDIA                  | Persistence                | Daemon:/:nvidia-persistenced       |                      |
+| /usr/bin/nologin:x:973:973:Light                   | Display                    | Manager:/var/lib/lightdm:lightdm   |                      |
+| /usr/bin/git-shell:x:972:972:git                   | daemon                     | user:/:git                         |                      |
+| /usr/bin/nologin:x:140:140:usbmux                  | user:/:usbmux              |                                    |                      |
+
+*** awk 内置变量
+| 内置变量 | 含义                                    |
+|----------+-----------------------------------------|
+| NR       | Number of Record                        |
+| NF       | Numbere of File ~$NF~ 表示最后一列      |
+| FS       | Field Separator ~-F: -v FS=:~           |
+| OFS      | Output Field Separator 输出字段分隔符号 |
+
+*** awk 模式匹配
+这个是比较好用的
+| 命令 | 选项            |
+|      | pattern{action} |
+ - 比较符号，大于小于等一些
+ - 正则
+ - 范围表达式
+ - 特殊条件 =BEGIN= 和 =END=
+**** 比较符号
+就是正常语言的比较符号
+**** 正则
+- // 支持扩展正则
+- awk 可以精确到某一列，或者某一列不包含某些部分 (这个比较流弊)
+  1. =~= 包含
+  2. =!~= 不包含
+| 正则              | awk 正则     |
+|-------------------+--------------|
+| ~^~ 匹配行开头    | 某一列的开头 |
+| ~$~ 匹配行结尾    | 某一列的结尾 |
+| ~^$~ 表示匹配空行 | 匹配空列     |
+#+begin_src shell
+cd ~/Org
+# 匹配第三列以 2 开头的行，并且打印出第一列、第三列和最后一列
+awk -F: -v OFS=: '$3~/^2/{print $1,$3,$NF}' passwd
+#+end_src
+
+#+RESULTS:
+: daemon:2:/usr/bin/nologin
+**** 表示范围
+和 [[sed][sed]] 类似的范围匹配
+1. ~/start/,/end/~ 比较常用，和 sed 的模式匹配比较的常见
+2. ~NR=1,NR=5~ 从第 1 行开始，到第 5 行结束，类似 ~sed -n '1,5p'~
+**** 特殊模式
+| 模式    | 含义                                | 应用场景                                                         |
+|---------+-------------------------------------+------------------------------------------------------------------|
+| BEGIN{} | 里面的内容会在 awk 读取文件之前执行 | 简单的统计，不涉及读取文件 or 制作表头文件                       |
+| END{}   | 里面的内容会在 awk 读取文件之后执行 | awk 进行统计，使用 END 进行输出（这个比较常用） 主要还是用来统计 |
+常见的统计，求和和累加，例子在下面
+#+begin_src shell
+# 统计有多少空行
+awk 'BEGIN{print "文件的空行为"}/^$/{i++}END{print i}' test.txt
+awk 'BEGIN{print "文件的空行为"}/^$/{i++}END{print i}' Linux.org
+#+end_src
+
+#+RESULTS:
+| 文件的空行为 |
+|           21 |
+| 文件的空行为 |
+|           15 |
+
+#+begin_src shell
+# awk 求和
+seq 110 | awk '{sum=sum+$1}END{print sum}'
+#+end_src
+
+#+RESULTS:
+: 6105
+**** awk 数组
+1. 统计日志：统计每个 ip 出现的次数等
+2. 累加求和：每个 ip 消耗的流量
+|                  | shell 数组                       | awk 数组                                  |
+|------------------+----------------------------------+-------------------------------------------|
+| 形式             | ~array[0]=oldboy array[1]=dalao~ | ~array[0]=oldbor array[1]=dalao~          |
+| 使用             | ~echo ${array[0]} ${array[1]}~   | ~print array[0] array[1]~                 |
+| 批量输出数组内容 | 按照 shell 的 for 循环操作       | awk 中的 for 循环比较的特殊，获取的是下标 |
+#+begin_src shell
+awk 'BEGIN{a[0]="oldboy";a[1]="dalao";a[2]=123;for(i in a)
+	print i, a[i]}'
+#+end_src
+
+#+RESULTS:
+| 0 | oldboy |
+| 1 | dalao  |
+| 2 | 123    |
+
+#+begin_src shell
+awk 'BEGIN{a[0]=oldboy;a[1]=dalao;print a[0],a[1]}'
+awk 'BEGIN{a[0]="oldboy";a[1]="dalao";print a[0],a[1]}'
+#+end_src
+
+#+RESULTS:
+|        |       |
+| oldboy | dalao |
+
+*一个很重要的知识，shell 中只要是字母就是被识别为变量，所以设置字符串需要加上 ~""~ *
+#+begin_src shell
+# 统计域名
+cat -n url.txt
+# 先使用 awk 查询有几个
+awk -F"[/.]+" '{print $2}' url.txt
+# 构建数组来存储
+awk -F"[/.]+" '{array[$2]++}END{for(i in array) print i, array[i]}' url.txt # 从这里又学到新的累加的方法
+# array[]++ 中括号内部就是需要统计的东西
+# 查询字体，这条命令在 org 结果生成表格不怎么好看，终端就看的比较清楚
+# fc-list | grep "Sarasa" | awk -F":"  '{print $2,$3}' | awk -F"," -vOFS=" | " '{print $1,$2}' | awk -F" style=" -vOFS=" | " 'BEGIN{print "| font","font","sytle |"}{print "| "$1,$2" |"}' |
+
+#+end_src
+
+#+RESULTS:
+| 1    | https://www.etiantian.org/index.html  |
+| 2    | https://www.etiantian.org/1.html      |
+| 3    | https://post.etiantian.org/index.html |
+| 4    | https://mp3.etiantian.org/index.html  |
+| 5    | https://www.etiantian.org/3.html      |
+| 6    | https://post.etiantian.org/2.html     |
+| www  |                                       |
+| www  |                                       |
+| post |                                       |
+| mp3  |                                       |
+| www  |                                       |
+| post |                                       |
+| www  | 3                                     |
+| mp3  | 1                                     |
+| post | 2                                     |
+**** awk 循环与判断
+***** for 循环
+#+begin_src shell
+# awk 中的 for 循环
+# 这是一种常用的循环
+awk 'BEGIN{for(i=1;i<10;i++)
+	sum+=i;
+ print sum
+ }'
+# 想要循环里面有多个语句，使用 {} 包裹就行
+awk 'BEGIN{
+for(i=1;i<10;i++){
+	sum+=i;
+	print sum
+	}
+}'
+# 还有就是专用于数组的循环，获取的是下标
+awk 'BEGIN{a[0]="oldboy";a[1]="dalao";a[2]=1532;for(i in a) print i,a[i]}'
+#+end_src
+
+#+RESULTS:
+| 45 |        |
+|  1 |        |
+|  3 |        |
+|  6 |        |
+| 10 |        |
+| 15 |        |
+| 21 |        |
+| 28 |        |
+| 36 |        |
+| 45 |        |
+|  0 | oldboy |
+|  1 | dalao  |
+|  2 | 1532   |
+***** if 判断
+#+begin_src shell
+df -h | awk -F"[ %]+" 'NR>1{if($5>1) print $1"'\'s' Disk not enough"}'
+#+end_src
+
+#+RESULTS:
+| /dev/sda3's | Disk | not | enough |
+| tmpfs's     | Disk | not | enough |
+| /dev/sda4's | Disk | not | enough |
+#+begin_src shell
+echo I am a handsome man and welcome to xiangtan |
+	awk '{for(i=1;i<=NF;i++)
+	 if (length($i)>5)
+	  print $i "'\'s' length more than five";
+	 else
+	  print $i "'\'s' length less than five"}'
+#+end_src
+
+#+RESULTS:
+| I's        | length | less | than | five |
+| am's       | length | less | than | five |
+| a's        | length | less | than | five |
+| handsome's | length | more | than | five |
+| man's      | length | less | than | five |
+| and's      | length | less | than | five |
+| welcome's  | length | more | than | five |
+| to's       | length | less | than | five |
+| xiangtan's | length | more | than | five |
+** ASCII 码
+对于 ASCII 码，可谓是耳熟能详，只有 128 个字符，但是我老是不清楚，今天在看《计算机网络原理》的时候又看到 =SOH= 和 =EOT= 这两个 ASCII 码，所以，就花了点时间来了解一下
+#+begin_src python
+for i, j in enumerate(range(128)):
+    print(i, chr(j), sep="|")
+#+end_src
+这个小代码，可以输出所有的 ASCII 码，自己运行后可以看见， =0~31 和 127= 都是不可见字符，总共 32 个不可见字符。更多详情可以查看 [[https://zh.wikipedia.org/wiki/ASCII][wikipedia]]。对于 python 文件，不在开头加上 ~#!/usr/bin/python~ ，就是
+=unicode= 文件，加上之后，就是 =ASCII= 文件。加上执行权限之后，就可以在 =terminal= 中执行了，这就是所谓的 python 脚本。（纯文本文件就是 ASCII 文件？我查不到）

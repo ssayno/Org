@@ -32,6 +32,21 @@
 	   1. =tar -rvf target.tar test=
 *** 其他
 	有时候需要解压一下 =rar= 文件，Window 下常用的压缩文件，可以下载 [[https://wiki.archlinux.org/title/Rar_(%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87)#%E5%AE%89%E8%A3%85][unrar]] 进行操作
+** find 命令
+在当前目录下查找文件
+- ~find . -name "filename"~ 区分大小写
+- ~find . -iname "filename"~ 不区分大小写
+  - ~-type~ 选项
+	| 选项 | 含义     |
+	|------+----------|
+	| d    | 目录     |
+	| f    | 文件     |
+	| b    | 块设备   |
+	| c    | 字符设备 |
+	| I    | 软链接   |
+	| p    | 管道     |
+	| s    | 套接字   |
+估计后面的那些都是很少用的到的
 ** ln （这个算了，查了一下，不是我想要的那种效果）
 *** 软链接
 *** 硬链接

@@ -176,7 +176,7 @@ return "pgf3.pdf"
 	  #+end_src
 
 	  #+RESULTS:
-	  [[file:pgf3.pdf]]
+	  [[file:]]
 	  #+begin_src python :results file
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import host_subplot
@@ -326,9 +326,6 @@ def example_plot(ax, fontsize=12, hide_labels=False):
 
 fig, ax = plt.subplots(constrained_layout=True)
 example_plot(ax, fontsize=24)
-plt.show()
-time.sleep(1)
-plt.close("all")
 plt.savefig("six.pdf")
 return "six.pdf"
   #+end_src
@@ -337,3 +334,34 @@ return "six.pdf"
   [[file:six.pdf]]
   总的来说吧，就是 ~constrained_layout=True~ 可以防止出现 label 显示不全，当有多子图的时候，可以是自动调整间距。
   好了，今天的 ~matplotlib~ 就到此为止了。
+*** Text in Matplotlib Plots [2021-11-28 Sun 11:22]
+今天学习一下在图像中添加文字，使用 ~plt.text()~ 等命令。面对对象画图的 API
+| 面向对象的 API | 描述                       |
+|----------------+----------------------------|
+| text           | 在 Axes 的任意位置添加文本 |
+| annotate       | 在 Axes 的任意位置添加文本 |
+| set_xlabel     | 添加 X 轴的标签            |
+| set_ylabel     | 添加 Y 轴的标签            |
+| set_title      | 为 Axes 添加标题           |
+| suptitle       | 为 Figure 添加标题         |
+#+begin_src python :results file
+import matplotlib.pyplot as plt
+fig = plt.figure(constrained_layout=True)
+ax = fig.add_subplot()
+plt.suptitle("This is Figure title")
+ax.set_title("This is axes title")
+ax.set_xlabel("x label")
+ax.set_ylabel("y label")
+ax.axis([0, 10, 0, 10])
+ax.text(3, 8, "A boxed in figure", bbox={"facecolor":"red", "alpha":0.5}, style="italic")
+ax.text(2, 6, r"an Equation: E=mc^{2}")
+ax.plot([2], [1], 'o')
+ax.annotate('annotate', xy=(2, 1), xytext=(3, 4),
+            arrowprops=dict(facecolor='black', shrink=0.05))
+plt.savefig("seven.pdf")
+return "seven.pdf"
+#+end_src
+
+#+RESULTS:
+[[file:seven.pdf]]
+如上案例主要是进行 text 的方法的应用，对 annotate 的应用下面一节进行学习。关于 text 的一些参数，可以从[[https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.text.html#matplotlib.axes.Axes.text][这里]]获得。

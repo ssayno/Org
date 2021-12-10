@@ -1,0 +1,337 @@
+#+TITLE: Linux 操作系统
+#+DATE: [2021-12-01 Wed 19 :16]
+#+STARTUP: show2levels
+* Preface
+这篇文章用来记录学习 Linux 操作系统的笔记。
+** 计算机硬件软件体系
+*** 冯.诺依曼体系结构
+1. 计算机处理的数据和指令一律用二进制数表示
+2. 顺序执行指令
+3. 计算机硬件由 *运算器、控制器、存储器、输入设备和输出设备*
+*** 计算机硬件组成
+1. 输入设备 :: 将人们熟悉的信息转换为机器能够识别的信息
+   1. 键盘、鼠标
+2. 输出设备 :: 将机器识别的信息转化为人能够识别的信息
+   1. 打印机、显示器
+3. 存储器 :: 用来存放数据和程序
+   - RAM(random access memory) 随即存储内存(我的电脑 8G 内存)
+	 - 速度快、容量小
+	 - 掉电易失
+	 - 逻辑 IO
+   - ROM(Read-Onboy Meomory) 只读内存硬盘(我的电脑是 1T)
+	 - 容量大、速度相对较慢
+	 - 长久保存
+	 - 物理 IO
+4. CPU(中央处理器)
+   1. 控制器
+	  - 控制器主要用来控制和指挥程序和数据的输入运行，以及处理运算结果
+   2. 运算器
+	  - 运算器主要运行算数和逻辑运算，并将中间结果暂存到运算器中
+一般来说内存是硬盘和 CPU 的中转站，内存读取之后，传给 CPU，速度快，所以内存是暂存。
+*** 硬盘的分类
+1. 硬盘按照存储介质的不同可以分为如下两种
+   1. 机械硬盘(Hard Disk Driver, HDD)
+	  - 机械硬盘采用磁性碟片存储数据
+	  - 用显微镜方法看，盘片表面凹凸不平，凸出的地方被磁化，凹的地方没有被磁化
+	  - 凸起的地方代表数字 1 (磁化为 1)，凹的地方代表数字 0
+	  - 硬盘可以以二进制来存储表示文字、图片的信息
+	  - 硬盘可以根据转速来判断硬盘的好坏，7200 转/分(磁盘转的越快，读取速度越快 ，)
+   2. 固态硬盘(Solid State Disk, SSD)
+	  + 固态硬盘通过闪存颗粒(固态电子存储序列)来存储数据
+	  + 固态硬盘的寿命没有机械硬盘长
+   3. 读写速度的区别
+	  1. 固态硬盘的读写速度普遍可以达到 400 M/s,写入速度也可以达到 130 M/s
+	  2. 固态的读写速度是机械硬盘的 3-5 倍
+   4. 机械硬盘的数据读写
+	  1. 主流的硬盘半机械半电子硬盘(机械硬盘)
+		 1. 硬盘的转速
+		 2. 寻道时间
+		 3. 数据传输时间
+		 4. 数据的存储是随机的(防止删除的时候扇面的移动)
+		 5. 硬盘的扇区是隔开的，当读取数据的时候是防止转动
+*** 顺序读写和随即读写
+[[https://xujiyou.work/Linux/%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90/%E9%9A%8F%E6%9C%BA%E8%AF%BB%E5%86%99%E4%B8%8E%E9%A1%BA%E5%BA%8F%E8%AF%BB%E5%86%99.html、][here]]
+
+1. 机械硬盘一般都是随即读取，速度较慢，但是他的顺序读取速度很快
+2. SSD 的随机和顺序读写都很快
+*** 网络链接概念
+1. IP 地址(IPADDR)
+   - IP 地址是一种逻辑地址，用来标识网络中的一个个主机
+	 - IP 地址=网络地址+主机地址
+	 - IP 地址是一个 4 * 8 bit（1 字节），由 0/1 组成的数组串
+2. 子网掩码(NETMASK)
+   - 子网掩码只有一个功能，将 IP 地址划分为网络地址和主机地址两部分呢
+   - 子网掩码用来判断任意两台计算机的 IP 地址是否在同一个子网中的根据
+3. 网关(GATEWAY)
+   + 连接两个不同的网络的设备都可以叫做网关设备，网关的作用就是实现两个网络之间的通讯和控制
+   + 网关地址就是网关设备的 IP 地址
+4. 域名服务器(DNS)
+   + DNS 是域名服务器，用来解析域名的(域名和 IP 地址之间的解析)
+   + 如果没有 DNS，登陆某个网站就必须输入该网站的 IP 地址，有了 DNS 就可以输入网址访问网站(google.com)
+   + 可以通过 [[https://cn.aliyun.com/][aliyun]] 进行域名申请
+	 #+begin_src shell
+2a01:4f9:c010:6b1f archlinux.org
+# archlinux.org 当你ping 的时候，会直接访问前面那个 IP 地址 
+	 #+end_src
+*** 网络链接模式
+1. host-only(主机模式)
+   + 在某些特殊的网络调试环境中，要求将真是环境和虚拟环境隔离开，这时候就可以采用 host-only 模式
+   + 在 host-only 模式中，所有的虚拟机系统之间可以互相通信，但虚拟系统和真实的网络是被隔离开的
+   + 在 host-only 模式下，虚拟系统的 TCP/IP 配置信息都是有 VMnet1(host-only) 虚拟网络的 DHCP 服务器动他分配
+2. bridged (桥接模式)
+   * VMWare 虚拟出来的操作系统像是局域网中的一台独立的主机，他可以访问网内的任意一台机器
+   * 使用桥接模式的虚拟系统和宿主机器的关系 ，就像是连接在同一个 HUB 上的两台电脑
+   * 比如，当前主机 IP 为 =165.125.145.8= ，虚拟机 IP 为 =165.125.145.xxx=
+	 * 我们学习过程过一般不用这个，防止 IP 冲突
+3. NAT (网络地址转换模式)
+   + 使用 NAT 模式，就是让虚拟系统借助 NAT (网络地址转换功能)，通过宿主机所在网络来访问公网
+   + NAT 模式下的虚拟系统的 TCP/IP 配置信息有 VMnet8(NAT) 虚拟网络的 DHCP 服务器提供
+   + 虚拟系统无法和本地局域网的其他真是主机通讯
+*** Linux 命令
+在记录这篇博客之前，我已经会了关于 Linux 的许多命令，所以一下记录的估计就是一些不常见的，或者说我以前没有注意的
+1. Linux 命令和参数需要使用 *空格* 隔开
+2. Linux 命令区分大小写
+3. ~type~
+4. ~whereis~ 查询文件所在位置
+   #+begin_src shell
+#!/usr/bin/bash
+whereis python
+# 关于 whereis 常用的两个选项
+whereis -b python				# 查找二进制文件
+whereis -m python				# 查找帮助手册
+   #+end_src
+
+   #+RESULTS:
+   | python: | /usr/bin/python                 | /home/sayno/anaconda3/bin/python | /usr/share/man/man1/python.1.gz |
+   | python: | /usr/bin/python                 | /home/sayno/anaconda3/bin/python |                                 |
+   | python: | /usr/bin/python                 | /home/sayno/anaconda3/bin/python | /usr/share/man/man1/python.1.gz |
+   | python: | /usr/share/man/man1/python.1.gz |                                  |                                 |
+5. ~file~ 查看文件类型
+   #+begin_src shell
+# 查看 ipynb 文件的文件类型
+cd ~/PycharmProjects/pymatlab/jp
+file latex.ipynb				# 可以知道 ipynb 是 JSON 类型
+# file 的几个常用参数
+file -b latex.ipynb				# 结果不显示文件名字
+file -c latex.ipynb
+file -i latex.ipynb				# 显示 MIME 类型，关于这个我的另外一片博客有提到这个玩意
+   #+end_src
+
+   #+RESULTS:
+   | latex.ipynb: | JSON              | data             |
+   | JSON         | data              |                  |
+   | latex.ipynb: | application/json; | charset=us-ascii |
+
+6. [[https://www.runoob.com/linux/linux-comm-cp.html][cp]] 拷贝命令
+   #+begin_src shell
+cp ./*.org ./test
+ls ./test
+# -r 递归 cp
+cp -r test test2
+   #+end_src
+7. [[https://www.runoob.com/linux/linux-comm-mkdir.html][mkdir]] 创建目录
+   ~-p~ 参数确保目录存在，不存在就创建一个
+   #+begin_src shell
+# 创建三个子文件夹，中间不能有空格
+mkdir -p ./{test1,test2,test3}
+   #+end_src
+
+   #+RESULTS:
+
+8. [[https://www.runoob.com/linux/linux-comm-rmdir.html][rmdir]] 删除空文件夹
+   ~-p~ 删除目录之后子目录如果是空的，那么删除空的子目录(我感觉这个命令比较的鸡肋)
+
+9. [[https://www.runoob.com/linux/linux-comm-mv.html][mv]] 移动或者重命名
+
+10. [[https://www.runoob.com/linux/linux-comm-touch.html][touch]] 修改文件属性或者目录
+	创建一个新的空文件，当这个文件存在，更新文件的属性
+
+#+begin_src shell
+touch main
+stat main
+#+end_src
+
+#+RESULTS:
+| File:   |              main |                    |         |        |        |      |         |       |        |
+| Size:   |                 0 |            Blocks: |       0 | IO     | Block: | 4096 | regular | empty | file   |
+| Device: |               8,4 |             Inode: | 8664904 | Links: | 1      |      |         |       |        |
+| Access: | (0644/-rw-r--r--) |               Uid: |       ( | 1000/  | sayno) | Gid: | (       | 984/  | users) |
+| Access: |        2021-12-04 | 12:24:55.182644272 |     800 |        |        |      |         |       |        |
+| Modify: |        2021-12-04 | 12:24:55.182644272 |     800 |        |        |      |         |       |        |
+| Change: |        2021-12-04 | 12:24:55.182644272 |     800 |        |        |      |         |       |        |
+| Birth:  |        2021-12-04 | 11:43:44.899393661 |     800 |        |        |      |         |       |        |
+
+1. [[https://www.runoob.com/linux/linux-comm-stat.html][stat]] 查看文件属性
+   stat 这个命令估计是算比较常用的
+2. [[https://www.runoob.com/linux/linux-comm-rm.html][rm]] 删除文件或目录
+   - ~-i~ 询问是否删除
+   - ~-r~ 递归删除
+   - ~-f~ 强制删除
+3. [[https://www.runoob.com/linux/linux-comm-ln.html][ln]] 链接
+   这个比较少用，但是好用，当源文件删除的时候，软链接就没了，但是硬链接还在，因为直接指向内存，指向同一个 Inode。
+   #+begin_src shell
+mkdir lntest
+cd lntest
+touch main
+stat main
+# 创建软链接
+ln -s main smain
+stat main
+# 创建硬链接
+ln main hmain
+stat main
+   #+end_src
+
+   #+RESULTS:
+   | File:   |              main |                    |         |        |        |      |         |      |        |
+   | Size:   |                30 |            Blocks: |       8 | IO     | Block: | 4096 | regular | file |        |
+   | Device: |               8,4 |             Inode: | 9965341 | Links: | 1      |      |         |      |        |
+   | Access: | (0644/-rw-r--r--) |               Uid: |       ( | 1000/  | sayno) | Gid: | (       | 984/ | users) |
+   | Access: |        2021-12-04 | 12:46:27.315933673 |     800 |        |        |      |         |      |        |
+   | Modify: |        2021-12-04 | 12:46:27.315933673 |     800 |        |        |      |         |      |        |
+   | Change: |        2021-12-04 | 12:46:27.315933673 |     800 |        |        |      |         |      |        |
+   | Birth:  |        2021-12-04 | 12:44:00.122605281 |     800 |        |        |      |         |      |        |
+   | File:   |              main |                    |         |        |        |      |         |      |        |
+   | Size:   |                30 |            Blocks: |       8 | IO     | Block: | 4096 | regular | file |        |
+   | Device: |               8,4 |             Inode: | 9965341 | Links: | 1      |      |         |      |        |
+   | Access: | (0644/-rw-r--r--) |               Uid: |       ( | 1000/  | sayno) | Gid: | (       | 984/ | users) |
+   | Access: |        2021-12-04 | 12:46:27.315933673 |     800 |        |        |      |         |      |        |
+   | Modify: |        2021-12-04 | 12:46:27.315933673 |     800 |        |        |      |         |      |        |
+   | Change: |        2021-12-04 | 12:46:27.315933673 |     800 |        |        |      |         |      |        |
+   | Birth:  |        2021-12-04 | 12:44:00.122605281 |     800 |        |        |      |         |      |        |
+   | File:   |              main |                    |         |        |        |      |         |      |        |
+   | Size:   |                30 |            Blocks: |       8 | IO     | Block: | 4096 | regular | file |        |
+   | Device: |               8,4 |             Inode: | 9965341 | Links: | 2      |      |         |      |        |
+   | Access: | (0644/-rw-r--r--) |               Uid: |       ( | 1000/  | sayno) | Gid: | (       | 984/ | users) |
+   | Access: |        2021-12-04 | 12:46:27.315933673 |     800 |        |        |      |         |      |        |
+   | Modify: |        2021-12-04 | 12:46:27.315933673 |     800 |        |        |      |         |      |        |
+   | Change: |        2021-12-04 | 12:46:27.322600340 |     800 |        |        |      |         |      |        |
+   | Birth:  |        2021-12-04 | 12:44:00.122605281 |     800 |        |        |      |         |      |        |
+4. rename 这个命令有点意思的，有C语言版本的，有Perl版本的，我用的是C版本的，关于具体的命令，可以使用 ~man rename~ 查看
+   #+begin_src shell
+cd test
+rename .ogr .org *
+   #+end_src
+
+   #+RESULTS:
+
+5. 
+#+begin_src shell
+# emacs Linux.org
+type ls
+type cd
+type for
+type 
+# emacs 中使用 emacs
+emacs Linux.org
+
+#+end_src
+
+#+RESULTS:
+| ls   | is | /usr/bin/ls   |          |         |
+| cd   | is | a             | shell    | builtin |
+| for  | is | a             | reserved | word    |
+| ping | is | /usr/bin/ping |          |         |
+*** Linux 中的特殊字符
+1. ~.~
+   + 如果是文件开始，则表示为隐藏文件，如 ~.zshrc~
+   + 或者表示当前目录 ~./.zshrc~
+   + 两个点表示上一级目录 ~../machine~
+2. ~$~
+   1. 表明这是一个变量(推荐用大括号，方便区分)
+	  #+begin_src shell
+echo ${USER}
+NAME=ZHOUGUOLIANG
+echo NAME
+echo ${NAME}
+	 #+end_src
+
+	 #+RESULTS:
+	 | sayno        |
+	 | NAME         |
+	 | ZHOUGUOLIANG |
+3. ~*~ 通配符
+   #+begin_src shell
+ls ./*.org
+   #+end_src
+
+   #+RESULTS:
+   | ./configuration.org          |
+   | ./Linux-operating-system.org |
+   | ./Linux.org                  |
+   | ./matplotlib.org             |
+   | ./New.org                    |
+   | ./sample.org                 |
+   | ./Server.org                 |
+   | ./shell.org                  |
+   | ./target.org                 |
+   | ./Tips.org                   |
+
+4. 命令的参数
+   1. 如果是单词，一般加 ~--~
+	  #+begin_src shell
+git --version
+	  #+end_src
+
+	  #+RESULTS:
+	  : git version 2.34.0
+
+   2. 如果是字母或者缩写，一般加 ~-~
+	  #+begin_src shell
+node -v
+	  #+end_src
+
+	  #+RESULTS:
+	  : v17.1.0
+*** Linux 的文件系统 [2021-12-03 Fri 21:47]
+**** 万事万物皆文件
+1. 文件系统
+   + 所有在 Linux 中的东西都是以文件的形式进行操作
+   + 文件系统
+	 + 操作系统如何管理文件，内部定义了一些规则或者定义
+   + 在 Linux 中，文件的访问和 Windows 下的不一样，Windows 下依靠的是盘符(当初我就因为这个被嘲讽了)
+   + Linux 上维护着一个树状结构的文件模型
+	 + 只有一个跟节点，为 ~/~
+	 + 一个节点下面可以有多个节点，就像树状结构
+   + 查找文件的方式
+	 + 绝对路径
+	   + 以根目录为基准点
+		 #+begin_src shell
+cat -A /etc/passwd
+		 #+end_src
+
+		 #+RESULTS:
+		 | root:x:0:0::/root:/bin/bash$                        |                              |                                            |                            |
+		 | bin:x:1:1::/:/usr/bin/nologin$                      |                              |                                            |                            |
+		 | daemon:x:2:2::/:/usr/bin/nologin$                   |                              |                                            |                            |
+		 | mail:x:8:12::/var/spool/mail:/usr/bin/nologin$      |                              |                                            |                            |
+		 | ftp:x:14:11::/srv/ftp:/usr/bin/nologin$             |                              |                                            |                            |
+		 | http:x:33:33::/srv/http:/usr/bin/nologin$           |                              |                                            |                            |
+		 | nobody:x:65534:65534:Nobody:/:/usr/bin/nologin$     |                              |                                            |                            |
+		 | dbus:x:81:81:System                                 | Message                      | Bus:/:/usr/bin/nologin$                    |                            |
+		 | systemd-journal-remote:x:981:981:systemd            | Journal                      | Remote:/:/usr/bin/nologin$                 |                            |
+		 | systemd-network:x:980:980:systemd                   | Network                      | Management:/:/usr/bin/nologin$             |                            |
+		 | systemd-oom:x:979:979:systemd                       | Userspace                    | OOM                                        | Killer:/:/usr/bin/nologin$ |
+		 | systemd-resolve:x:978:978:systemd                   | Resolver:/:/usr/bin/nologin$ |                                            |                            |
+		 | systemd-timesync:x:977:977:systemd                  | Time                         | Synchronization:/:/usr/bin/nologin$        |                            |
+		 | systemd-coredump:x:976:976:systemd                  | Core                         | Dumper:/:/usr/bin/nologin$                 |                            |
+		 | uuidd:x:68:68::/:/usr/bin/nologin$                  |                              |                                            |                            |
+		 | avahi:x:975:975:Avahi                               | mDNS/DNS-SD                  | daemon:/:/usr/bin/nologin$                 |                            |
+		 | dhcpcd:x:974:974:dhcpcd                             | privilege                    | separation:/:/usr/bin/nologin$             |                            |
+		 | sayno:x:1000:984::/home/sayno:/usr/bin/zsh$         |                              |                                            |                            |
+		 | polkitd:x:102:102:PolicyKit                         | daemon:/:/usr/bin/nologin$   |                                            |                            |
+		 | rtkit:x:133:133:RealtimeKit:/proc:/usr/bin/nologin$ |                              |                                            |                            |
+		 | nvidia-persistenced:x:143:143:NVIDIA                | Persistence                  | Daemon:/:/usr/bin/nologin$                 |                            |
+		 | lightdm:x:973:973:Light                             | Display                      | Manager:/var/lib/lightdm:/usr/bin/nologin$ |                            |
+		 | git:x:972:972:git                                   | daemon                       | user:/:/usr/bin/git-shell$                 |                            |
+		 | usbmux:x:140:140:usbmux                             | user:/:/usr/bin/nologin$     |                                            |                            |
+
+	 + 相对路径
+	 + *日常的使用无所谓相对或者绝对路径，但是在书写配置文件，最好是使用绝对路径*
+** Linux 文件系统
+[[https://zh.wikipedia.org/wiki/%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%B1%82%E6%AC%A1%E7%BB%93%E6%9E%84%E6%A0%87%E5%87%86][FHS]]
+** Linux 服务与日志
+服务的英文为 service ，服务顾名思义是就是能为系统或者用户提供某种特殊的服务的程序，只不过一般这种程序是常驻后台，不是直接运行的，这种程序一般叫做守护进程 daemon
+1. 常见的服务有
+   1. SSH 用于能随时连接到服务器，提供这个服务的程序是 sshd
+   2. cron 提供定时任务的服务，提供这个服务的程序是 crond

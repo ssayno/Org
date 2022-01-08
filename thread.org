@@ -1,0 +1,43 @@
+#+TITLE: Theading and asyncio
+#+DATA: [2021-12-22 Wed 15:02]
+#+STARTUP: overview
+* Preface
+这篇博客来记录一下学习线程和协程，本篇的 map 函数无其他声明，都是 futures 中 Executor 类的 map 函数。
+* 并发和并行
+1. 并发: 把任务在不同的时间点交给处理器进行处理。在同一时间点，任务并不会同时运行。
+2. 并行（parallelism）：把每一个任务分配给每一个处理器独立完成。在同一时间点，任务一定是同时运行。
+3. GIL(Global Interpreter Lock)：全局解释器锁
+   CPython 解释器所采用的一种机制，它确保同一时刻只有一个线程在执行 Python bytecode。此机制通过设置对象模型（包括 dict 等重要内置类型）针对并发访问的隐式安全简化了 CPython 实现。
+   给整个解释器加锁使得解释器多线程运行更方便，其代价则是牺牲了在多处理器上的并行性，
+   不过，某些标准库或第三方库的扩展模块被设计为在执行计算密集型任务如压缩或哈希时释放 GIL。此外，在执行 I/O 操作时也总是会释放 GIL。（所以在 [[https://zhuanlan.zhihu.com/p/62766037][I/O 密集型]] 还是有用的）
+* 简单了解一下
+** Executor 对象
+- ~submit(fn, /, *args, **kwargs)~ =fn= 位置参数，返回 Future 对象
+- ~map(func, *iterables, timeout=None, chunksize=1)~ 这个发现一个有趣的事情，这里无法使用列表内嵌作为迭代器，原生的 map 函数也是， *原生的可以使用 itertools.starmap*
+  返回直接是结果，而不是 Future 对象
+- ~shutdown(wait=True, *, cancel_futures=False)~ 这个相当于文件操作中的 =close()= 函数，可以通过 =with= 避免使用这个命令
+** 子类
+上述的方法 =Executor= 是无法直接调用的，通过子类 =ThreadPoolExecutor= 和 =ProcessPoolExecutor= 进行调用
+使用包 =concurrent.futures= 可以应付平时需要使用的线程和进程处理了，由于上传 git 失败，直接由这篇博客记录代码
+1. 原来版本：[[https://github.com/ssayno/python/blob/master/start.py][start]]
+2. 线程版本：[[https://github.com/ssayno/python/blob/master/mid.py][mid]]
+使用类 =ThreadPoolExecutor= ，需要指定最大线程数量
+3. 进程版本：[[https://github.com/ssayno/python/blob/master/end.py][end]]
+使用类 =ProcessPoolExecutor= 可以执行真正的并行计算，这个类把工作分配给了 python 进程进行处理，这个适合 CPU 密集型的处理，绕开了 GIL，利用 CPU 核心。
+在 =ProcessPoolExecutor= 中，可以不指定进程数量，一般都是通过 ~os.cpu_count()~ 获取 CPU 数量作为默认值。
+4. 由于 =ThreadPoolExecutor= 和 =ProcessPoolExecutor= 都是继承于类 =Executor= ，所以他们两之间的转换还是比较简单的。
+** Future 对象
+Future 类可以调用对象封装为异步执行，Future 实力通过 submit 函数创建（也就是说 map 函数产生不是 Future 对象）
+1. =cancel()= 尝试取消调用。 如果调用正在执行或已结束运行不能被取消则该方法将返回 False，否则调用会被取消并且该方法将返回 True。
+2. =cancelled()= 如果调用成功取消返回 True
+3. =done()= 如果调用已被取消或正常结束那么返回 True。
+4. =result()= 返回调用返回的值。如果调用还没完成那么这个方法将等待 timeout 秒。 如果在 timeout 秒内没有执行完成，concurrent.futures.TimeoutError 将会被触发。timeout 可以是整数或浮点数。如果 timeout 没有指定或为 None，那么等待时间就没有限制。如果 futrue 在完成前被取消则 CancelledError 将被触发。如果调用引发了一个异常，这个方法也会引发同样的异常。
+** 模块函数
+~as_completed(fs)~ 返回一个包含 fs 所指定的 Future 实例（可能由不同的 Executor 实例创建）的迭代器，这些实例会在完成时生成 future 对象（包括正常结束或被取消的 future 对象）。 任何由 fs 所指定的重复 future 对象将只被返回一次。 任何在 as_completed() 被调用之前完成的 future 对象将优先被生成
+函数源码：[[https://github.com/ssayno/python/blob/master/as_comple.py][as_comple]]
+** 对于 map 方法的研究
+map 函数较为容易使用，有个需要注意的特性，函数返回结果的顺序和传入数据的顺序对应(可能会比较好用)，但是一般的情况下，不需要这种，一般情况下
+搭配 =submit= 和 =as_completed= 会更加的常用。
+源码如下：[[https://github.com/ssayno/python/blob/master/exprement_map.py][expermental_map]]
+* 替代品
+当你发现这些满足不了你的时候，那么就是时候使用 threading 或者 multiprocessing 来进行线程或者进程管理了。

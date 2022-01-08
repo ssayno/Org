@@ -7,6 +7,9 @@
 2. 关闭已经打开的 google
    1. linux :: ~google-chrome --remote-debugging-port=9222~ 在端口 9222 打开 google 浏览器作为测试
    2. windows :: ~chrome.exe --remote-debugging-port=9222~ 找到 chrome 所在目录，运行这个命令。(这个我不确定了，我主力是 Linux 现在，可以自己查查)
+#+begin_export html
+<!-- more -->
+#+end_export
 3. 最好保证 google 只开一个 tab，不然有时候有问题，我 selenium 用的不是很熟练，我也不是很清楚。
 4. 当然，需要的库也是需要安装好的（pycharm 中安装 cv2 叫做 opencv-python，这个是真的阴间，导入又要 =import cv2= ）
 5. 进行滑动验证的时候不要动鼠标，他是模拟点击的。

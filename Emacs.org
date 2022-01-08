@@ -1,0 +1,139 @@
+#+TITLE: Emacs
+#+STARTUP: content
+#+DATE: <2021-11-04 四 00:00>
+* Some tips about the emacs
+  - If you want start the =eamcs --daemon= with the [[https://kde.org/][KDE]], you can use =systemctl enable --now emacs.service= (This file is on the //usr/lib/systemd/user/).
+  - If you use emacs in the terminal, you can use =C-S-v= or =C-S-c= to copy or yank.
+#+begin_export html
+<!-- more -->
+#+end_export
+* Some operations in Emacs
+** About the region <<region>>
+   - =M-@= :: Set mark at the end ot the next word (mark-word). This does not move point.
+   - =C-M-@= :: Set mark aftere end od following balanced expression (mark-sexp). This does not move point.
+   - =M-h= :: Move point to the beginning of the paragraph, and set mark at the end (mark-paragraph).
+   - =C-M-h= :: Move point to the beginning of the current defun, and set mark at the end (mark-defun).
+   - =C-x C-p= :: Move point to the beginning of the current page, and set mark at the end (mark-page).
+   - =C-x h= :: Move point to the beginning of the buffer, and then set mark at the end (mark-whole-buffer).
+** Uppercase, Lowercase and capitalize
+   + =M-l= :: Convert the following word to lowercase.
+   + =M-u= :: Convert the following word to uppercase.
+   + =M-c= :: Capitalize the following word.
+   + =C-x C-l= :: Convert the region to the lowercase.
+   + =C-x C-u= :: Convert the region to the uppercase.
+** About the package
+   + On the old blog, I learn it.
+** About the search
+   - This is used for test.
+	 - Abc
+	 - abc
+	 - abc
+	 - ABc
+	 - abcd
+   - =M-s .= search the word at the point (with the boundary check).
+   - =C-s= I use /swiper/ so the =C-s= without the boundary check.
+   - =M-s w= search the word at the point (with the boundary check).
+   - =M-s _= same as the =C-s=, but with the boundary check.
+   - =M-s h .= highlight the word in this buffer, but when you kill this buffer, it will disappear
+*** Search text in dird
+	This tags I will learn it tomorrow.
+	+ =M-x rgrep= Search all files in current directory and subdirectory.
+	+ ~M-x lgrep~ Search only some files of current dir by using a text pattern (regex) on file names first.
+	+ =M-x grep-find= use a combination of unix *grep* and *find* commands.
+	+ =M-x dired-do-find-regexp= maybe don't use it.
+	+ =M-x find-dired= use the *find* commands. (you should know the *find* command).
+*** About the replace
+	- =M-%= (query-replace) input the words you want to be replaced and replace.
+	  - =y= to replace.
+	  - =n= to skip.
+	  - =!= do all replacement without asking.
+	  - =C-g= to cancel.
+	- =C-M-%= (query-replace-regexp) like =M-%=, but use regular expression.
+	- =M-x dired-do-query-replace-regexp= find and replace on marked files in dired. <<cross>>
+	  - you used use =C-x d= to mark some file.
+** Rectangle[2021-11-09 二 15:07]
+   This subtitle is used for *rectangle* in Emacs. It isn't funny.
+** Dired [2021-11-09 二 15:29]
+   This subtitle is about the usage of *Dired* operations.
+   1. =C-x d= enter the dired.
+   2. =m= mark file or dirs (This is useful when you use the command =dired-do-query-replace-regexp=)[[cross][Replace]].
+   3. =<DEL>= move to previous line and unmark file or dirs.
+   4. =f or <enter>= visis the file.
+   5. =p= previous line.
+   6. =n= next line.
+   7. =g= refresh the dir.
+   8. =d= mark the files or dirs to delete.
+   9. =x= delete marked files or dirs.
+   10. =u= remove the current line mark and go to next line.
+   11. =+= create a direction.
+   12. =^= move to parent directory.
+   13. =C= copy a file or directory.
+   14. =R= rename a file or directory.
+   15. =v= view file just readonly.
+   16. =~= mark backup file to delete.
+
+** Indentation
+   some commands about the indentation.
+   + =C-M-o= split the current line at point.
+   + =M-m= move forward or back to the first no-whitespace character on the current line.
+   + =M-i= indent whitespace at point, up to the next tab stap.(This can be used as the ~<TAB>~)
+   + =M-^= Merge the previous line and current line. (This joins the two lines clearly)
+   + =C-M-\= indent all the lines in the region, as though you had typed *TAB* at the beginning of each line.
+   + =C-x TAB= use to change the indentation all line in this region.
+	 + =left or right= back or forward one space.
+	 + =S-left or S-right= back or forward a tabwidth.
+   #+begin_src python :results file
+import matplotlib.pyplot as plt
+import numpy as np
+x = np.linspace(-100, 100, 10000)
+y = np.sin(x) / x
+plt.plot(x, y)
+plt.savefig(format='svg', fname='result.svg')
+return 'result.svg'
+   #+end_src
+
+   #+RESULTS:
+   [[file:result.svg]]
+   a
+
+*** About the Tab Stops
+
+** Mark and registor
+   This section I will learn about the mark and registor, you can learn with the [[region]].
+   1) Emacs
+	  1) This is my facvorite
+   2) Vim
+	  1) maybe I will learn it
+   3) sublime
+	  1) expensive
+   4) gedit
+	  1) convience
+   5) nano
+	  1) use it seldomly
+   6) VS code
+	  1) good
+*** Setting the mark
+	1. =C-SPC= set the mark at point, and activate it.<<set mark>>
+	2. =C-@= the same as the [[set mark][mark]].
+	3. =C-x C-x= set the mark at point, and activate it; then move point where the mark used to be.(*exchange-point-and-mark*)
+	4. and other commands about the mark which uses the mouse I don't write down.
+*** The mark ring
+	Each buffer remembers previous locations of the mark, in the /mark ring/. Commands that se the mark also push the old mark onto this ring. One of the uses of the mark ring is to remember spots that you may want to back to.
+	1) =C-SPC C-SPC= to push a mark to ring, Without activating it.
+	2) =C-u C-SPC= to pop a mark and jump to that position.
+	3) Note: Every buffer has its own mark ring.
+	4) The variable 'set-mark-command-repeart-pop' maybe useful.
+*** Register
+**** Saving Positions in Registers
+	 use register to save position.
+	 1. =C-x r SPC Q= save current position to buffer, *Q* is the buffer name which could be number, upper/lowe characters.
+	 2. =C-x r j Q= to jump to the position that register saved.
+	 This very useful when we read the code or refactor code.
+**** Saving Text in Registers
+	 when you want to insert or copy of some piece of text several times, it may be inconveient to yank it from the kill ring.
+	 So you can store the text in a register an later retrieve it.
+	 - =C-x r s /Q/= Copy region into register /Q/ (copy-to-register).
+	 - =C-x r i /Q/= insert text from register /Q/ (insert-register).
+	 - =C-x r + /Q/= append the register.
+**** About this[2021-11-16 二 22:25]
+	 These day, I use other hard disk to install the Arch Linux and use the DWM instead of the KDE.

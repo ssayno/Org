@@ -10,6 +10,9 @@
    - =pacman -S fcitx-{chinses-addons,im,pinyin-zhwiki}= 安装相似的包
 	 - /fcitx-chinese-addons,fcitx-im,fcitx-pinyin-zhwiki/
    - 有个多层扩展，保险起见，不会这么写的
+#+begin_export html
+<!-- more -->
+#+end_export
 ** 虚包
    虚拟软件包本身不存在，但是由一个或者多个软件包提供。
    - =pacman -S gnome= gnome是一个虚包，里面有很多的包供你选择
@@ -40,12 +43,31 @@
   - 使用命令 =sudo fdisk -l= 查看电脑的的硬盘分区情况，一般来说U盘都是在 =/dev/sdb= 。
   - 找到所在分区 =/dev/sdb4= 然后使用如下命令。
   - 卸载U盘所在分区 =/dev/sdb, /dev/sdb4= ，
-	#+begin_src shell
+	#+begin_quote
 umount /dev/sdb/
-	#+end_src
+	#+end_quote
   - 使用命令 ~mkfs.vfat~ 或者 ~mkfs.fat -F 32~ 把U盘变成FAT32的格式（常见的格式）。
-	#+begin_src shell
+	#+begin_quote
 mkfs.vfat /dev/sdb
 mkfs.fat -F 32 /dev/sdb4
-	#+end_src
+	#+end_quote
 然后U盘格式化就成功了。
+
+* Token for Picgo
+  #+begin_quote
+ghp_lYStAnEpvMKIba7zV8EDfJVV72Udlm1aF6Q\\
+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
+  #+end_quote
+  The second is my now token. Have a test.
+  [[https://raw.githubusercontent.com/rifiuto/Picgo/master/img/token.png]]
+
+** Some useful software in Arch.
+*** Screenkey
+	- Installation
+	  #+begin_quote
+sudo pacman -S screenkey
+	  #+end_quote
+	- Usage
+	  #+begin_quote
+This software can display the key you print on you computer screen.
+	  #+end_quote

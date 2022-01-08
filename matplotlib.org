@@ -154,7 +154,7 @@ return "pgf2.pdf"
 	  #+end_src
 
 	  #+RESULTS:
-	  [[file:pgf2.pdf]]
+	  [[file:]]
 	  使用 LaTeX 来渲染文本 ~plt.rcParams["text.usetex"]=True~ ， *值得注意的是，当使用 LaTeX 渲染文本的时候，则需要注意 LaTeX 的特殊字符了* 。
 	  #+begin_src python :results file
 import numpy as np
@@ -365,3 +365,337 @@ return "seven.pdf"
 #+RESULTS:
 [[file:seven.pdf]]
 如上案例主要是进行 text 的方法的应用，对 annotate 的应用下面一节进行学习。关于 text 的一些参数，可以从[[https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.text.html#matplotlib.axes.Axes.text][这里]]获得。
+***
+** Preview [2021-12-21 Tue 15:37]
+由于接了一单 matplotlib 的作业，所以现在复习一下 matplotlib 中的一些基础的知识
+*** 关于中文的问题和负号显示的问题
+- 由于我是 Linux 系统，目前没有需要在图上显示中文的需求，这里只是记载关于 Windows 系统下的中文显示问题 ~plt.rcParams["font.sans-serif"] = ["Simhei"]~ 就可以解决问题
+- 关于负号显示的问题，使用命令 ~plt.rcParams["axes.unicode_minus"] = False~ 就可以
+*** 一些字符的含义
+说是复习，其实这些东西比较常用但是我没有注意
+| 字符 | Color | 字符 | Linestyle | 字符 | Marker   | 字符 | Marker   |
+|------+-------+------+-----------+------+----------+------+----------|
+| b    | 蓝色  | =-=  | 实线      | p    | 五角点   | v    | 倒三角   |
+| g    | 绿色  | =-.= | 虚线      | h    | 六边形点 | <    | 左三角   |
+| r    | 红色  | =--= | 虚线      | +    | 加号点   | l    | vline    |
+| c    | 青色  | =:=  | 点线      | D    | 钻石     | =-=  | hline    |
+| m    | 品红  |      |           | d    | 瘦菱形点 | ^    | 上三角点 |
+| y    | 黄色  |      |           | *    | 星型点   | >    | 右三角点 |
+| k    | 黑色  |      |           | s    | 正方点   | =.=  | 点       |
+| w    | 白色  |      |           | x    | 乘号点   | o    | 原点       |
+1. 控制 =Linestyle= ，使用参数 =ls=
+   1. ~ls=":"~
+2. 线条宽度，使用参数 =lw=
+   1. ~lw=3~
+3.
+#+begin_src python :results file
+import matplotlib.pyplot as plt
+import numpy as np
+plt.figure(figsize=(7, 6))
+x = np.linspace(0, 10, 30)
+y = np.sin(x)
+plt.xlabel('axis-x', fontsize=15)
+plt.ylabel('axis-y', fontsize=15)
+a = plt.plot(x, y,
+        color='c',
+        marker='o',
+        ls=":",
+        lw=1)
+plt.axis([-1, 11, -1.2, 1.2])
+plt.xticks([0, np.pi, 2 * np.pi, 3 * np.pi],
+          ["0", r"$\pi$", r"2$\pi$", r"$\pi$"],
+          rotation=45)
+plt.yticks(np.linspace(-1.2, 1.2, 9),
+          [f"${r:.3}$" for r in np.linspace(-1.2, 1.2, 9)],
+          rotation=90)
+plt.title("I'm a title",
+         bbox={
+             "boxstyle": "square",
+             "fc": 'c',         # 背景颜色
+             "ec": "r",         # 边框颜色
+             "alpha": 0.5
+         },
+          fontsize=12,
+          fontweight="bold",
+          rotation=30,
+          color="blue",
+          va="center",
+          ha="center"
+         )
+for i, j in zip(x, y):
+    if j > 0 :
+        plt.text(i-0.2, j+0.1, f"{j:.2}", color='c', fontsize=10, rotation=45)
+    else:
+        plt.text(i-0.1, j-0.1, f"{j:.2}", color='c', fontsize=10, rotation=45)
+# 添加网格线
+plt.grid(ls=":", lw=2, color="y")
+plt.savefig("p2.pdf")
+return "p2.pdf"
+#+end_src
+
+#+RESULTS:
+[[file:p2.pdf]]
+*** 画气泡图(本质上就是不同大小的散点图)
+气泡图就是把 ~marker~ 设置为 ~marker="o"~ ，并且把控制大小的参数 =s= 设置为随机数字
+#+begin_src python :results file
+import matplotlib.pyplot as plt
+import numpy as np
+n = 50
+x1 = np.random.randn(n) * 5
+y1 = np.random.randn(n) * 5
+x2 = np.random.randn(n) * 5
+y2 = np.random.randn(n) * 5
+plt.figure(figsize=(7, 7))
+plt.scatter(x1, y1,
+           c = np.random.randn(n),
+           cmap = "Blues",
+           marker = "o",
+           lw = 2,
+           s = np.random.randint(0, 100, n),
+           label="test1")
+plt.grid(ls="-.", color="c")
+plt.legend()
+plt.savefig("p3.pdf")
+return "p3.pdf"
+#+end_src
+
+#+RESULTS:
+[[file:p3.pdf]]
+*** 文本框注释(本质就是 text 函数使用 box 来装饰)
+~plt.text(x, y, "I'm a text", bbox=dict({boxstyle="square", fc='y', ec='c'}))~
+*** 水平线、垂直线以及色带
+#+begin_src python :results file
+import matplotlib.pyplot as plt
+import numpy as np
+plt.figure(figsize=(5, 5), dpi=100)
+x = np.linspace(0, 3 * np.pi, 100)
+y = np.sin(x)
+plt.plot(x, y)
+# 水平线
+plt.axhline(y=0.4, xmin=0.1, xmax=np.pi, c="r", lw=3)
+# 垂直线
+plt.axvline(x=np.pi, ls=":", lw=2, color="c")
+# 水平色带
+plt.axhspan(ymin=-0.2, ymax=0.3, fc="m", alpha=0.3)
+# 垂直色带
+plt.axvspan(xmin=0.2, xmax=3, fc="lightblue", alpha=0.9)
+plt.savefig("p4.pdf")
+return "p4.pdf"
+#+end_src
+
+#+RESULTS:
+[[file:p4.pdf]]
+
+*** 箭头注释
+不常用，需要查看官网进行解决
+
+*** 移动坐标轴位置
+~plt.gca()~ 返回当前的坐标轴
+
+*** 柱状图
+柱状图的填充物 ~hatch: {'/', '\\', '|', '-', '+', 'x', 'o', 'O', '.', '*'}~
+#+begin_src python :results file
+import matplotlib.pyplot as plt
+import numpy as np
+x = range(1, 5)
+y = [1.5, 0.6, 7.8, 6]
+err = [0.3, 0.1, 1.5, 1]
+names = ["Monday", "Tuesday", "Friday", "Sunday"]
+
+plt.figure(figsize=(5, 5))
+plt.bar(x, y, width=0.4,
+        color=["c", "r", "y", "b"],
+        tick_label=names,       # 设置标签
+        hatch="-",
+        yerr=err                # 添加误差线
+        )
+plt.savefig("p5.pdf")
+return "p5.pdf"
+#+end_src
+
+#+RESULTS:
+[[file:p5.pdf]]
+这里搞一个堆叠的柱状图
+#+begin_src python :results file
+import matplotlib.pyplot as plt
+import numpy as np
+x = range(1, 5)
+y = [1.5, 0.6, 7.8, 6]
+y2 = [1, 2, 3, 5]
+names = ["Monday", "Tuesday", "Friday", "Sunday"]
+
+plt.figure(figsize=(5, 5))
+plt.bar(x, y, width=0.4,
+        tick_label=names,       # 设置标签
+        hatch="-",
+        label="bottom")
+plt.bar(x, y2, width=0.4,
+        bottom=y,
+        label="top")
+plt.legend(frameon=True)
+plt.savefig("p5.pdf")
+return "p5.pdf"
+#+end_src
+
+#+RESULTS:
+[[file:p5.pdf]]
+这里搞一个并列的柱状图， *如果想要标签居中的话，使用 ~plt.xticks()~ 命令来进行调整 *
+#+begin_src python :results file
+import matplotlib.pyplot as plt
+import numpy as np
+x = range(1, 5)
+y = [1.5, 0.6, 7.8, 6]
+y2 = [1, 2, 3, 5]
+width=0.4
+names = ["Monday", "Tuesday", "Friday", "Sunday"]
+
+plt.figure(figsize=(5, 5))
+plt.bar(x, y, width=width,      # 设置标签
+        hatch="-",
+        label="bottom")
+
+plt.bar(np.array(x)+width, y2, width=width,
+        label="top")
+plt.xticks(np.array(x)+width/2, names)
+plt.legend(frameon=True)
+plt.savefig("p5.pdf")
+return "p5.pdf"
+#+end_src
+
+#+RESULTS:
+[[file:p5.pdf]]
+
+*** 条形图
+本质上和柱状图没有啥区别
+#+begin_src python :results file
+import matplotlib.pyplot as plt
+import numpy as np
+x = range(1, 5)
+y = [1.5, 0.6, 7.8, 6]
+err = [0.3, 0.1, 1.5, 1]
+names = ["Monday", "Tuesday", "Friday", "Sunday"]
+
+plt.figure(figsize=(5, 5))
+plt.barh(x, y,
+        color=["c", "r", "y", "b"],
+        tick_label=names,       # 设置标签
+        hatch="-",
+        xerr=err                # 添加误差线
+        )
+plt.savefig("p5.pdf")
+return "p5.pdf"
+#+end_src
+
+#+RESULTS:
+[[file:p5.pdf]]
+
+*** 填充图线
+#+begin_src python :results file
+import matplotlib.pyplot as plt
+import numpy as np
+plt.figure(figsize=(4, 4))
+x = np.linspace(0, 5 * np.pi, 100)
+y = np.sin(x)
+plt.plot(x, y)
+plt.fill(x, y, fc="y")
+plt.savefig("tc.pdf")
+return "tc.pdf"
+#+end_src
+
+#+RESULTS:
+[[file:tc.pdf]]
+
+*** 饼图
+#+begin_src python :results file
+import matplotlib.pyplot as plt
+import matplotlib.cm as cm
+import numpy as np
+labels = ["A", "B", "C", "D"]
+students = [0.34, 0.15, 0.21, 0.3]
+colors = ["c", "r", "b", "y"]
+explode = [0, 0.24, 0.36, 0]
+plt.figure(figsize=(7, 7))
+plt.pie(students, labels=labels,
+        colors=cm.ScalarMappable().to_rgba(students),
+        autopct="%3.0f%%",      # 饼图内的数据标签
+        pctdistance=0.45,       # 数据标签里圆心的距离
+        startangle=90,          # 第一块的位置
+        radius=1.2,             # 半径
+        shadow=True,            # 阴影有
+        explode=explode,         # 块分布加强
+        )
+sm = plt.cm.ScalarMappable(norm = plt.Normalize(vmin=0.08, vmax=0.3))
+plt.colorbar(sm)
+plt.savefig("bt.pdf")
+return "bt.pdf"
+#+end_src
+
+#+RESULTS:
+[[file:bt.pdf]]
+
+*** 阶梯图
+#+begin_src python :results file
+import matplotlib.pyplot as plt
+import numpy as np
+plt.figure(figsize=(5, 5))
+x = np.linspace(0, 2 * np.pi, 100)
+y = np.sin(x)
+plt.plot(x, y, color="r")
+plt.step(x, y,
+         color="c",
+         lw=1,
+         where="post"            # 阶梯在数据点之前，之后为 post
+         )
+plt.savefig("jt.pdf")
+return "jt.pdf"
+#+end_src
+
+#+RESULTS:
+[[file:jt.pdf]]
+
+*** 直方图
+#+begin_src python :results file
+import matplotlib.pyplot as plt
+import numpy as np
+mu, sigma = 100, 15
+datas = mu + sigma * np.random.randn(10000)
+plt.figure(figsize=(8, 7))
+# 直方图的形式
+histstyles = ["bar", "step", "stepfilled", "barstacked"]
+
+for i in range(len(histstyles)):
+    plt.subplot(221 + i)
+    plt.hist(datas,
+             bins=15,            # 直方图中柱子的数量
+             lw=2,
+             ec="purple",
+             histtype=histstyles[i]
+             )
+    plt.title(f"histstyle={histstyles[i]}")
+
+plt.savefig("zf.pdf")
+return "zf.pdf"
+#+end_src
+
+#+RESULTS:
+[[file:zf.pdf]]
+
+*** 绵棒图
+*** 极坐标气泡图
+#+begin_src python :results file
+import matplotlib.pyplot as plt
+import numpy as np
+N = 100
+r = 5 * np.random.rand(N)
+theta = 2 * np.pi * np.random.rand(N)
+area = 200 * r * 2
+colors = theta
+plt.figure(figsize=(4, 4))
+ax = plt.subplot(111, projection="polar")
+ax.scatter(theta, r, alpha=0.4, c=colors, cmap="hsv",s=area, marker="o")
+plt.savefig("jz.pdf")
+return "jz.pdf"
+#+end_src
+
+#+RESULTS:
+[[file:jz.pdf]]

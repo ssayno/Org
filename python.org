@@ -1,0 +1,360 @@
+#+TITLE: Python
+#+DATE: [2021-12-11 Sat 18:43]
+#+STARTUP: overview
+* Preface
+这篇笔记主要是用来记录学习《流畅的 Python》这本书的笔记
+** 随记
+这篇博客是用来记录看 python 官方文档写的一些笔记
+1. ~repr 和 str~ 两个都是将参数转化为字符串，不过有些差异
+   1. ~repr~ 转化为电脑阅读的字符串
+   2. ~str~ 转化为人阅读的字符串
+	  #+begin_src python :results output
+test = "This is a test\n"
+print(repr(test))
+print(f"使用 repr 字符串长度为{len(repr(test))}")
+print(str(test))
+print(f"使用 str  字符串长度为{len(str(test))}")
+	  #+end_src
+
+	  #+RESULTS:
+	  : 'This is a test\n'
+	  : 使用 repr 字符串长度为18
+	  : This is a test
+	  :
+	  : 使用 str 字符串长度为15
+2. 格式化字符串(简称为 f-字符串)
+   在字符串前面加上 =f= 或者 =F=，使用 ~{expression}~ 来表示表达式
+   #+begin_src python :results output
+import math
+print(f"The value of pi is approximately {math.pi:.3f}")
+   #+end_src
+
+   #+RESULTS:
+   : The value of pi is approximately 3.142
+   还有一些修饰符可以在格式化前转换值。 ~!a~ 应用 ~ascii()~ ， ~!s~ 应用 ~str()~ ， ~!r~ 应用 ~repr()~
+3. 输出其他进制
+   #+begin_src python :results output
+print(f"10 的八进制 {10:#o}")
+print(f"10 的十六进制 {10:#X}")
+print(f"10 的二进制 {10:#b}")
+   #+end_src
+
+   #+RESULTS:
+   : 10 的八进制 0o12
+   : 10 的十六进制 0XA
+   : 10 的二进制 0b1010
+4. for 循环中的 else 语句，循环的 else 子句则在未运行 break 时执行
+   #+begin_src python :results output
+# for 循环的 else 语句，容易理解的就是判断是否为质数
+for i in range(2, 100):
+    for j in range(2, i):
+        if i % j == 0:
+            print(f"{i}不是质数，{i}={j}*{i//j}")
+            # break
+    else:
+        print(f"{i}是质数")
+   #+end_src
+5. 默认的参数函数多次调用默认值只计算一次。默认值为列表、字典或类实例等可变对象时，会产生与该规则不同的结果。例如，下面的函数会累积后续调用时传递的参数：
+   #+begin_src python :results output
+def f(a, L=[]):
+    L.append(a)
+    return L
+print(f(1))
+print(f(2))
+   #+end_src
+
+   #+RESULTS:
+   : [1]
+   : [1, 2]
+   不想在后续调用之间共享默认值时，应以如下方式编写函数：
+   #+begin_src python :results output
+def f(a, L=None):
+    if L is None:
+        L = []
+    L.append(a)
+    return L
+print(f(1))
+print(f(2))
+   #+end_src
+
+   #+RESULTS:
+   : [1]
+   : [2]
+6. 函数调用时，关键字参数必须跟在位置参数后面。所有传递的关键字参数都必须匹配一个函数接受的参数
+7. *仅限位置参数* 和 *仅限关键字参数*
+   1. 仅限位置形参应放在 =/= （正斜杠）前
+   2. 应在参数列表中第一个 仅限关键字 形参前添加 =*=
+	  #+begin_src python :results output
+# 不限制
+def standard(a):
+    print(a)
+standard(a="Can you help me")
+standard(12)
+# 仅限位置参数
+def pos_only(a,/):
+    print(a)
+    return None
+pos_only(2)
+try:
+    pos_only(a=2)
+except TypeError as e:
+    print("这是一个仅限位置形参")
+
+# 仅限关键字参数
+def kwd_only(*, a):
+    print(a)
+kwd_only(a=2)
+try:
+    kwd_only(2)
+except TypeError as e:
+    print("这是一个仅限关键字形参")
+# 这是一个结合版本
+def combined_example(pos_only, /, standard, *, kwd_only):
+    print(pos_only, standard, kwd_only)
+combined_example(1, standard=2, kwd_only="test")
+combined_example(1, 2, kwd_only="test")
+	  #+end_src
+
+	  #+RESULTS:
+	  : Can you help me
+	  : 12
+	  : 2
+	  : 这是一个仅限位置形参
+	  : 2
+	  : 这是一个仅限关键字形参
+	  : 1 2 test
+	  : 1 2 test
+	  其实还有一个比较有意思的，标准的参数阻挡了其他
+	  #+begin_src python :results output
+def foo(name, **kwds):
+    return 'name' in kwds
+# 此时，就产生了冲突
+try:
+    foo(1, {"name": 1})
+except Exception as e:
+    print(e)
+# 把 name 变成位置参数就行了
+def foo2(name, /, **kwds):
+    return 'name' in kwds
+print(foo2(1, **{"name": 2}))
+print(foo2(1, **{"names": 2}))
+print({"names": 2})
+	  #+end_src
+
+	  #+RESULTS:
+	  : foo() takes 1 positional argument but 2 were given
+	  : True
+	  : False
+	  : {'names': 2}
+8. 函数注解，看下面这个函数就可以知道了。
+   #+begin_src python :results output
+def annotation(a: int, b: str = "test")-> str:
+    return f"a的值{a}，b的值为{b}"
+print(annotation(3))
+print(annotation(3, "TEST"))
+   #+end_src
+
+   #+RESULTS:
+   : a的值3，b的值为test
+   : a的值3，b的值为TEST
+9. 安装 python 之后，提供了一个命令行工具 =chardetect= 来判断文件的编码类型，那个 confidence 就是置信区间
+   当然也是有 =chardet= 库完成这个功能
+   #+begin_src shell
+chardetect python.org
+   #+end_src
+
+   #+RESULTS:
+   : python.org: utf-8 with confidence 0.99
+   1.
+** 一等函数
+*** 概念
+编程语言理论家把 =一等对象= 定义为满足下述条件的程序实体
+1. 在运行时创建
+2. 能够赋值给变量或者数据结构中的元素
+3. 能作为参数传递给函数
+4. 能作为函数的返回结果
+如果你对 python 有着一定熟悉度，你会了解到 python 的函数完全满足；在 python 中，整数、字符串和字典也是一等对象。
+#+begin_src python :results output
+def factorial(n):
+    '''return n!'''
+    return 1 if n < 2 else n * factorial(n-1)
+print(factorial.__doc__)
+fact = factorial
+print(factorial(4))
+print(fact(4))
+#+end_src
+
+#+RESULTS:
+: return n!
+: 24
+: 24
+有了一等函数，就是可以使用函数式编程了。函数式编程的特点之一就是使用高阶函数
+*** 高阶函数
+接受函数作为参数，或者把函数作为结果返回的函数就是 *高阶函数*
+1. ~sorted~
+   - 作为比较常用的排序函数，可以使用 key 参数指定排序方法(任何 *单参数函数* 都能作为 key 参数的数值)
+2. ~map~
+3. ~filter~
+   - 不过现在 =列表推导= 和 =生成器表达式= 可以比较有效的代替 ~map and filter~
+*** 匿名函数
+单就我个人而言，我不是很喜欢使用匿名函数，emacs-lisp 中我也是很少使用。(lambda 就是语法糖)
+*** 可调用对象
+可以使用 python 中内置的函数 ~callable()~ 判断是否可以调用
+1. 用户定义的函数： =def, lambda=
+2. 内置函数 =len(list)=
+3. 内置方法 =dict.get=
+4. 方法 :: 在类的定义体中定义的函数
+5. 类
+6. 类的实例(如果类中搞了一个 ~__call__~ 方法，那么实例可以作为函数调用)
+   #+begin_src python :results output
+class Test:
+    def __init__(self):
+        pass
+
+    def __repr__(self):
+        return "<I'm closed>"
+test = Test()
+print(Test())
+try:
+    test()
+except Exception as e:
+    print("没有定义 __call__ 方法")
+    print(e)
+class Test2:
+    def __init__(self):
+        pass
+
+    def __call__(self):
+        print("I'm callable")
+test2 = Test2()
+
+try:
+    test2()
+except Exception as e:
+    print("没有定义 __call__ 方法")
+    print(e)
+   #+end_src
+
+   #+RESULTS:
+   : <I'm closed>
+   : 没有定义 __call__ 方法
+   : 'Test' object is not callable
+   : I'm callable
+
+7. 生成器函数
+*** 函数内省
+函数具有的属性，使用命令 ~dir(function)~ 进行查看。大部分的属性函数共有，需要翻书，或者使用命令查看。
+*** 支持函数式编程的包
+Python 的目的不是成为函数式编程语言，但是有 =operator= 和 =functools= 等一些包的支持，python 进行函数式编程还是比较的方便。
+#+begin_src python :results output
+from functools import reduce
+def fact(n):
+    return reduce(lambda a, b: a*b, range(1, n+1))
+print(fact(11))
+print(f"reduce 函数的工作原理如下{reduce.__doc__}")
+#+end_src
+
+#+RESULTS:
+: 39916800
+: reduce 函数的工作原理如下reduce(function, sequence[, initial]) -> value
+:
+: Apply a function of two arguments cumulatively to the items of a sequence,
+: from left to right, so as to reduce the sequence to a single value.
+: For example, reduce(lambda x, y: x+y, [1, 2, 3, 4, 5]) calculates
+: ((((1+2)+3)+4)+5).  If initial is present, it is placed before the items
+: of the sequence in the calculation, and serves as a default when the
+: sequence is empty.
+python 的 =operator= 模块中定义了许多的对应运算符的函数，可以自行查看，还是很有用的。
+上述代码可以去掉匿名函数，改写如下
+#+begin_src python :results output
+from functools import reduce
+from operator import mul
+def fact(n):
+    return reduce(mul, range(1, n+1))
+print(fact(11))
+#+end_src
+
+#+RESULTS:
+: 39916800
+*** 使用 ~functools.partial~ 冻结参数
+~functools.partial~ 这个函数用于部分应用于一个函数，基于一个函数创建一个新的可调用对象，把原函数u的某些参数固定。使用这个函数
+可以把接受一个或者多个参数的函数改变成需要回调的 API
+#+begin_src python :results output
+from operator import mul
+from functools import partial
+triple = partial(mul, 3)
+print(triple(7))
+#+end_src
+
+#+RESULTS:
+: 21
+** 使用一等函数实现设计模式
+关于设计模式，做项目什么的时候都是比较受欢迎的，我有一本关于设计模式的书，等到这个寒假，会拜读一下。
+本节用于使用一等函数重构经典的 =策略模式= ，暑假的时候了解过一点点的 java，了解过 java 的策略模式，工厂模式等，不过现在都是有点点忘了。
+代码如下：[[https://github.com/ssayno/python/blob/master/basic/start.py][start]]
+可以明显的看到，使用经典的策略模式会使得代码过于冗长，对于能实现函数设计模型的来说，可以使用一等函数进行代码的简写
+代码如下：[[https://github.com/ssayno/python/blob/master/basic/restart.py][restart]]
+** 函数装饰器和闭包
+函数装饰器用于在源码中 *标记* 函数，来增强函数的行为，在此之前，需要了解到闭包的功能。
+*** 装饰器基础了解
+装饰器是一个可调用的对象，他的参数是另外一个函数（被装饰的函数）。装饰器可以处理（被装饰的函数）并返回，也可能返回另外一个函数或者可调用对象
+#+begin_src python :results output
+# 这就是一个简简单单的装饰器
+def deco(func):
+    def inner():
+        print("Running inner")
+    return inner
+# 使用装饰器
+@deco
+def function():
+    print("Running function")
+function()
+#+end_src
+
+#+RESULTS:
+: Running inner
+如果不理解装饰器，可以用一个更加简单的方法来看待装饰器
+#+begin_src python :results output
+def deco(func):
+    def inner():
+        print("Running inner")
+    return inner
+
+def function():
+    print("Running function")
+function = deco(function)
+function()
+#+end_src
+
+#+RESULTS:
+: Running inner
+总的来说，装饰器只是语法糖，其两大特性
+1. 能把被装饰的函数替换为其他函数
+2. *装饰器在加载模块的时候立即执行*
+*** Python 何时执行装饰器
+装饰器在 =被装饰的函数= 定义之后立即运行
+#+begin_src python :results output
+
+#+end_src
+** 协程
+*** 关于 yield from
+=yield from= 是一种全新的语言结构，传达了一种至关重要的一点，在生成器 gen 中使用 ~yield form subgen()~ ，把产出的值传递给 gen 的调用方，
+此时调用方可以直接控制 subgen。同时，gen 会阻塞，等待 subgen 的终止。
+#+begin_src python :results output
+def get():
+    for i in [("1", 2), "abcdefghijkl"]:
+        yield from i
+
+print(list(get()))
+#+end_src
+
+#+RESULTS:
+: ['1', 2, 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l']
+yield 的主要功能就是打开双向通道，把最外层的调用方和最内层的子生成器连接起来，这样二者可以直接发送和产出值，不用在位于中间的协程添加异常处理模块。
+1. 委派生成器 :: 包含 ~yield from subgen()~ 表达式的生成器函数
+2. 子生成器 :: ~subgen()~
+3. 调用方
+   其中，子生成器 =subgen()= 不需要进行手动激活， ~yield from~ 会给你激活，而且 ~yield from~ 会自己处理异常。
+** Python 中的虚拟环境
+1. [[https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments/#creating-a-virtual-environment][Python 虚拟环境]]
+2. [[http://www.justdopython.com/2020/05/26/python-virtualenv/][virtualenvironment]]

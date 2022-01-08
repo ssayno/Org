@@ -1,0 +1,109 @@
+* Django 中的层次结构
+使用 Pycharm 创建的 Django 项目的层次目录结构，介绍默认文件
+#+begin_src shell
+├── manage.py
+├── Reaq
+│   ├── asgi.py
+│   ├── __init__.py
+│   ├── settings.py
+│   ├── urls.py
+│   └── wsgi.py
+├── templates
+#+end_src
+使用命令行创建的 Django 项目的层次目录结构
+#+begin_src shell
+├── manage.py 「项目的管理、启动项目、创建 app ，数据管理」「无需修改」
+└── omy
+    ├── asgi.py 「接受网络请求」「无需修改」
+    ├── __init__.py
+    ├── settings.py 「项目的配置文件」「注册 app 手动添加」「添加数据库」
+    ├── urls.py 「URL 和 Python 函数的对应关系」「经常修改」
+    └── wsgi.py 「接受网络请求」「无需修改」
+#+end_src
+*Pycharm 创建的 Django 项目多了一个 templates 目录，而且在 setting.py 中添加了 DIRS* ，通过 diff 命令，可以看见，本质区别
+#+begin_src shell
+57c57,58
+# 命令行
+<         'DIRS': [],
+---
+# PyCharm 创建
+>         'DIRS': [BASE_DIR / 'templates']
+>         ,
+#+end_src
+1. 标准的 Django 项目不需要这个，当使用 PyCharm 的时候，建议手动删除 =DIRS 和 Templates 目录=
+2. 经常使用也就是 setting.py, urls.py manage.py
+
+* 创建 app 之后的层次结构
+#+begin_src shell
+├── app01
+│   ├── admin.py
+│   ├── apps.py 「固定，不需要动」
+│   ├── __init__.py
+│   ├── migrations 「固定，不动」数据库变动
+│   ├── models.py
+│   ├── tests.py 「固定，不动」 单元测试
+│   └── views.py 「重要，函数」 MVT 模式的 V
+├── manage.py
+├── Reaq
+│   ├── asgi.py
+│   ├── __init__.py
+│   ├── __pycache__
+│   ├── settings.py
+│   ├── urls.py 「URL -> app 内的 views.py 中的函数」
+│   └── wsgi.py
+#+end_src
+
+* 在项目的根目录添加 app
+1. 在 setting.py 文件的 =INSATLLED_APP= 添加手动创建的 app
+2. urls.py 中添加 path, 在 views.py 中写对应函数
+
+* 启动 Django 项目
+1. 命令行 ~python manage.py runserver~
+2. PyCharm 可以在运行旁边选择
+
+* 模板 templates
+在 app 的目录下创建 templates 目录，存放对应的 html 文件，创建 static 目录，存放图片，css，js 等静态文件。
+#+begin_src shell
+.
+├── admin.py
+├── apps.py
+├── __init__.py
+├── migrations
+│   ├── __init__.py
+│   └── __pycache__
+├── models.py
+├── __pycache__
+│   ├── admin.cpython-310.pyc
+│   ├── apps.cpython-310.pyc
+│   ├── __init__.cpython-310.pyc
+│   ├── models.cpython-310.pyc
+│   └── views.cpython-310.pyc
+├── static
+│   ├── css 存放 css 文件
+│   ├── img 存放图片
+│   ├── js 存放 js 文件
+│   └── plugins 存放其他插件，如 bootstrap
+├── templates 存放 html 文件
+│   ├── index.html
+│   └── mainPage.html
+├── tests.py
+└── views.py
+#+end_src
+推荐使用命令 ~{ % load static% }~ 来加载静态文件目录，方便后期修改
+
+* Django 中的 DTL 模板语法
+1. 变量， ~{{ var }}~ 来展示
+2. 标签，tag， ~{ % tag % }~ ，像前面的 ~{ % load static% }~ 就是
+   #+begin_src python
+# 对于常见的翻阅书籍即可
+   #+end_src
+3. 过滤器，类似 shell 中的管道命令 ~{{ django | title }}~
+4. 注释
+   #+begin_src python
+{# 这是 DTL 的单行注释 #}
+{% comment %}
+    这是多行注释，包含在模板标签 comment 中
+{% endcomment %}
+   #+end_src
+5. DTL 模板的继承操作
+   +

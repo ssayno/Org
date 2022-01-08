@@ -1,8 +1,11 @@
- #+TITLE: Linux
+#+TITLE: Linux
 #+DATE: [2021-11-26 Fri 22:25]
 #+STARTUP: show2levels
 * Preface
 这篇博客记录学习 Linux 三剑客的操作
+#+begin_export html
+<!-- more -->
+#+end_export
 ** grep
 ~grep~ 这个玩意我还是用的比较多的，基于 =shell= 的正则语法表达式，我还是比较喜欢的。从 12 月前，我会尽量的详细的了解这些基础的命令。
 | 选项 | 含义                                    |
@@ -410,4 +413,12 @@ for i, j in enumerate(range(128)):
     print(i, chr(j), sep="|")
 #+end_src
 这个小代码，可以输出所有的 ASCII 码，自己运行后可以看见， =0~31 和 127= 都是不可见字符，总共 32 个不可见字符。更多详情可以查看 [[https://zh.wikipedia.org/wiki/ASCII][wikipedia]]。对于 python 文件，不在开头加上 ~#!/usr/bin/python~ ，就是
-=unicode= 文件，加上之后，就是 =ASCII= 文件。加上执行权限之后，就可以在 =terminal= 中执行了，这就是所谓的 python 脚本。（纯文本文件就是 ASCII 文件？我查不到）
+=unicode= 文件，加上之后，就是 =ASCII= 文件。加上执行权限之后，就可以在 =terminal= 中执行了，这就是所谓的 python 脚本。（纯文本文件就是 ASCII 文件？我查不到）(就是)
+回车符（CR）和换行符（LF）是文本文件用于标记换行的控制字符（字节码）
+1. CR = Carriage Return，回车符号（\r，十六进制 ascii 码为0x0D，十进制 ascii 码为13），用于将鼠标移动到行首，并不前进至下一行。
+2. LF = Line Feed，换行符号（ \n, 十六进制 ascii 码为 0x0A，十进制 ascii 码为10）。
+3. 不同的系统中，换行使用的 ASCII 码是不同的
+   1. Linux :: ~LF~
+   2. Windows :: ~CRLF~
+   3. Mac :: ~CR~
+4. 真有意思，三种主流系统，三种换行方式

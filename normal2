@@ -1,0 +1,5 @@
+alias mv="mv -i"
+alias rm="rm -i"
+alias pu="sudo pacman -Syu"
+alias gts="git status"
+alias up="cd .."

@@ -1,0 +1,610 @@
+#+BLOG: myblog
+#+POSTID: 134
+#+DATE: [2022-04-13 Wed 16:23]
+#+TITLE: Java
+#+startup: overview
+* Java 中的主方法
+~public static void main(String []args){}~
+1. ~public~ 公共方法
+2. ~static~ 设置为类直接调用方法，使得未实例化类就可以直接调用该方法。
+3. ~void~ 主方法是一切的起点，开始无返回。
+4. ~main~ 系统定义的方法名称。
+5. ~String[] args~ 命令行参数。
+* Stream
+数据流: 就是字节数据（二进制数据），java 中有两个包进行操作
+1. 字节处理流： ~OutputStream~ 和 ~InputStream~
+2. 字符处理流： ~Write(输出字符流)~ 和 ~Reader(输入字符流)~
+3. 输入 ~Reader~ 和 ~InputStream~ ，同理就是输出
+** 流操作的同一步骤
+1. 如果是文件的操作，则要通过一个 =File= 类找到一个文件
+2. 通过字节流或字符流的子类进行父类实例化(上面提到的都是抽象类)
+3. 利用字节流或者字符流进行数据的输入和输出
+4. 流的操作是资源操作，需要进行关闭
+*** OutputStream
+#+begin_src java
+public abstract class OutputStream extends Object implements Closeable, Flushable
+#+end_src
+接口 ~Closeable~ 提供 ~close()~, 接口 ~Flushable~ 提供 ~flush()~, ~OutputStream~ 自己也定义了
+**** 方法
+| No | Name                                                           | Type   | Description      |
+|----+----------------------------------------------------------------+--------+------------------|
+|  1 | public void write(byte[] b) throws IOException                 | 普通   | 输出一组字节数据 |
+|  2 | public abstract void write(int b) throws IOException           | *重要* | 输出单个字节数据 |
+|  3 | public void write(byte[] b,int off,int len) throws IOException | 普通   | 输出部分字节数据 |
+**** 子类
+1. ~FileOutputStream~
+   使用文件 ~File~ 类进行构造
+    #+begin_verse
+    构造方法
+    1. 覆盖 FileOutputStream(File file)
+    2. 追加 FileOutputStream(File file, boolean append)
+    #+end_verse
+*** InputStream
+#+begin_src java
+public abstract class InputStream extends Object implements Closeable
+#+end_src
+**** 方法
+| No | Name                                                           | Type   | Description                    |
+|----+----------------------------------------------------------------+--------+--------------------------------|
+|  1 | public abstract int read() throws IOException                  | 普通   | 读取一个(如果读到最后，返回-1) |
+|  2 | public int read(byte[] b) throws IOException                   | *重要* | 读取一组(返回实际)             |
+|  3 | public int read(byte[] b, int off, int len) throws IOException |        | 读取部分                       |
+*** Writer
+* 正则表达式
+* 对象引用分析
+所谓的引用数据类型，就是同一块 *堆内存* 空间，可以被不同的 *栈内存* 指向。
+垃圾空间：就是没有任何栈内存的指向的堆内存，所有的垃圾空间都会被 *GC* 不定期回收。
+类对象的属性封装：就是用 ~private~ 修饰变量（属性），这样外部无法直接使用该变量。
+#+begin_src java
+public class Person {
+    private String name;
+    private byte age;
+    public Person(String name, byte age){
+        this.name = name;
+        this.age = age;
+    }
+    public String toString(){
+        return "Name is " + this.name + " and age is " + this.age;
+    }
+}
+public class Basic {
+    public static void main(String[] args) {
+        System.out.println("类的基本使用");
+        Person person = new Person("zgl", (byte) 12);
+        System.out.println(person.toString());
+        System.out.println(person);
+    }
+}
+
+#+end_src
+这样的话， ~person.name or person.age~ 是不允许的。定义 ~setterxxx()~ 和 ~getterxxx()~ 函数
+** 构造方法和匿名对象
+Java 在创建对象的时候，如果总是用 ~setXXX()~ 函数，那么比较的繁琐，所以 Java 提供了构造方法。
+1. 构造方法的名称必须和类名称一致。
+2. 构造方法没有返回值的定义。
+3. 构造方法是在使用关键字 ~new~ 创建实例化对象的时候自动调用（重要）。
+4. 每个类至少有一个无参的构造函数。
+5. *构造函数同样支持重载*
+#+begin_src java
+// 假如有了一个 Person 类
+// 构造方法如下
+public Person(String name, int age){
+    this.name = name;
+    this.age = age;
+}
+#+end_src
+~public void Persion(String name, int age)~ 是错误的， *程序编译器根据代码结构进行编译处理的，执行的时候也是根据代码结构进行处理的。*
+*** 匿名对象
+比较简单，没有引用，用完就是垃圾空间，例如 ~new Person().tell()~
+** this 关键字
+~this~ 关键字在 Java 类中比较的好用，在以后的 Java 类中，调用属性和方法都用 ~this~ 修饰。
+#+begin_src java
+package work.sayno.www;
+
+public class Person {
+    private String name;
+    private byte age;
+    public Person(){
+        System.out.println("开始实例化");
+    }
+    public Person(String name){
+        this();
+        this.setName(name);
+    }
+    public Person(String name, byte age){
+        this(name);
+        this.setAge(age);
+    }
+    public byte getAge() {
+        return age;
+    }
+    public void setAge(byte age) {
+        if (age < 0){
+            System.out.println("\033[31mPlease input the correct age.\nNow, I will set age to 0.\033[0m");
+            this.age = 0;
+            return;
+        }
+        this.age = age;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String toString(){
+        return "Name is " + this.name + " and age is " + this.age;
+    }
+}
+#+end_src
+对与 =this= 的使用，构造函数的嵌套使用，详情见如上代码。
+*this() 必须放在构造函数的首行*
+** 简单 Java 类
+1. 类的名称必须有意义。
+2. 类之中的所有属性必须使用 ~private~ 进行修饰，并且提供 =setXX= 和 =getXX= 方法。
+3. 类之中可以提供无数个构造方法，但是必须保留一个无参的构造方法。
+4. 类之中不允许出现任何的输出语句，所有的内容必须直接返回。
+5. （可选）提供一个获取详细信息的的方法。
+** static 关键字
+在 Java 中 ~static~ 是一个非常常见的关键字，用来修饰属性和方法。
+*** Preface
+在一个类中，所有的属性一旦定义，内容都是交给堆内存保存。
+*** static 属性
+使用 ~static~ 声明的属性是全局的，所有的对象都是共用一个变量。一旦变化就是全部变化。 ~static~ 属性访问用最高权限来访问，就是类本身。
+1. 大部分的情况下，非 ~static~ 的属性是首选的，除非是公共的信息存储。
+2. ~static~ 属性可以在没有实例化的情况下使用，非 ~static~ 属性不能够。
+*** static 方法
+~static~ 定义的方法主要特点是：可以直接由类名称直接调用，不需要进行实例化对象。
+1. ~static~ 方法： ~static~ 方法只允许调用 ~static~ 属性和 ~static~ 方法。
+2. 非 ~static~ 方法：允许调用 ~static~ 属性和 ~static~ 方法。
+3. ~static~ 方法中调用 ~private~ 属性不需要使用 ~this~ ，因为本来就不要实例化就可以使用（都不需要使用）。
+4. ~static~ 的方法或者属性大致上用的还是比较少的。
+*** static 案例
+自动统计创建了多少个实例化对象;
+#+begin_src java
+package work.sayno.www;
+
+public class Count {
+    private static int count = 0;
+    public Count(){
+        count++;
+    }
+    public String toString(){
+        return Integer.toString(count);
+    }
+}
+#+end_src
+** 代码块
+*** 普通代码块
+定义在一个方法中的代码块。 由于 Java 中不允许同一个变量名重复定义，但是如果是在代码块中，那就是有了作用域。
+#+begin_src java
+public void print(){
+    if(true){
+        int x=0;
+        System.out.println(x);
+    }
+    int x = 100;
+    System.out.println(x);
+}
+#+end_src
+上面的代码就是有普通代码块（还好我读过一点点的 C Prime Plus）对于这些理解还是好一点的。
+*** 构造块
+构造块，听名字就知道是构造时候使用的，也就是说是定义在一个类中的。
+*构造块的代码会优先于构造方法中代码先执行，而且每次实例化对象都会调用一次（匿名对象同样也是）*
+*** 静态块
+静态代码块是用 ~static~ 定义的代码块，静态块的定义有两种情况
+**** 主类中定义静态块
+静态代码块优先于主方法执行。
+**** 非主类中定义静态块
+静态代码块会优先于构造代码块执行， *不管实例化多少个对象，都执行一次* 。
+1. 多个语句需要执行，最好使用静态代码块。
+*** 同步代码块
+* String 字符串
+1. 和 C 语言一样，字符串不好直接进行比较，使用 String 类的方法 ~strA.equal(strB)~ 。
+2. 字符串常量 ~String str = "www.sayno.work"~ 是匿名的 String 类对象。
+** 字符串比较
+1. ~==~ 这是常见的进行是否相等的比较：对于基本的数据类型，比较的是他们的数值，对于引用数据类型，比较的是在堆内存中的地址。
+2. ~equals~ 继承 =Object= 类的方法，直接进行内容的判断（以后都是使用 ~equals~ 进行字符串判断）。
+** Java 中两种字符串实例化的比较
+*** 匿名对象
+直接将字符串赋值给一个变量。例如 ~String url="www.sayno.work"~ ，Java 底层中有一个字符串常量池（字符串数组），所以
+#+begin_src java
+String A="www";
+String B="www";
+#+end_src
+A 和 B 指向的是同一块堆内存。当使用匿名对象实现字符串的时候，每次赋值的时候，如果字符串常量池有这个字符串，那么直接指向这块地址，如果没有，存放到字符串常量池，然后再指向这块地址。
+*** 构造方法实例化
+~String str = new String("www");~ 这样的话，会开辟两块堆内存， ~"www"~ 到常量池，然后 ~new~ 开辟一块空间，最后常量池中的成为了垃圾空间。
+**** 另外一种形式
+首先 ~String strA = "www";~ 接着 ~String strB = new String("www");~ 这个是自动开辟堆内存空间（ *但是常量池中有了该字符串，所以不会产生垃圾空间* ），所以地址还是不一样。但是可以通过 ~intern()~ 方法手动入池(*必须是在new String之后直接调用*)。
+#+begin_src java
+package work.sayno.www;
+
+public class Basic {
+    public static void main(String[] args) {
+        System.out.println("字符串的基本使用");
+        String strA = "www.sayno.work";
+        String strB = "www.sayno.work";
+        String strC = new String("www.sayno.work").intern();
+        System.out.println(strA == strB);
+        System.out.println(strA.hashCode());
+        System.out.println(strB.hashCode());
+        System.out.println(strC.hashCode());
+        System.out.println(strA.equals(strC));
+        System.out.println(strA == strC);
+    }
+}
+#+end_src
+*** String 类两种实例化方式的区别
+1. 直接赋值：只会产生一个实例化对象，并且可以保存到常量池中，实现重用；
+2. 构造方法：会产生两个实例化对象，不会自动保存到常量池，无法重用，可以在构造的使用使用 ~intern()~ 方法手动入池。
+** 字符串常量池
+
+* 数组
+开发中通常不会使用这个。
+1. Java 中数组是引用数据类型。
+#+begin_src java
+1. 动态初始化： 数据类型 [] 数组名称 = new 数据类型[长度];
+2. 静态初始化（在数组定义的时候就设置里面的内容）  数据类型 [] 数组名称 = new 数据类型[] {第一个，第二个，....};
+#+end_src
+2. Java 中的数组操作和其他语言没有其他的区别。
+   1. ~array.length~ 返回数组的长度
+   2. 动态初始化每个变量都是 *数据类型* 的默认值。
+3. Java 中的 ~for each~ 循环，自动获取数组的每一个元素
+#+begin_src java
+foreach(int a: array){
+    System.out.println(a);
+}
+#+end_src
+循环将 array 数组中的变量赋值给变量 a。
+** 二维数组
+一些关于二维数组的操作，一般来说，二维数组很少用得到。
+#+begin_src java
+System.out.println("二位数组的定义和使用");
+System.out.println("动态二维数组的定义和使用");
+Integer [][] tArray = new Integer[2][3];
+for (Integer []hang :
+        tArray) {
+    for (Integer item :
+            hang) {
+        System.out.println(item);
+    }
+}
+System.out.println("静态二维数组的的的定义和输出");
+Integer [][] jtArray = new Integer[][] {{1,2,3}, {3,4}};
+for(Integer[] hang: jtArray){
+    for(Integer item: hang){
+        System.out.println(item);
+    }
+}
+#+end_src
+
+** 数组的方法
+Java 语言本身提供了数组相关支持的处理。 ~java.util.Arrays.*~ 提供了相关的操作。
+1. ~sort()~
+2. ~arraycopy()~
+** 方法的可变参数
+Java 中方法接收可变参数的实现。（可变参数的本质还是数组，只是去掉了外壳）
+#+begin_src java
+public static int sum(int ... data){
+    int sum=0;
+    for(int item :data){
+        sum += item;
+    }
+    return sum;
+}
+#+end_src
+
+** 类数组
+类数组和普通的数组没有其他的操作区别。
+** 类关联结构
+其他类之间进行关联操作
+#+begin_src java
+package work.sayno.www;
+
+public class Union {
+    public static void main(String[] args) {
+        System.out.println("类关联结构");
+        Person zgl = new Person("周国良", 20);
+        System.out.println("生成汽车");
+        Car bwm = new Car("宝马", 200000);
+        System.out.println(zgl.getCar());
+        System.out.println("绑定汽车");
+        zgl.setCar(bwm);
+        System.out.println(zgl.getCar());
+    }
+}
+package work.sayno.www;
+
+public class Car {
+    private String name;
+    private double price;
+    public Car(){}
+    public Car(String name, double price){
+        this.setName(name);
+        this.setPrice(price);
+    }
+
+    public String toString(){
+        return "车名：" + this.name + "；车的价值：" + this.price;
+    }
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
+}
+package work.sayno.www;
+
+public class Person {
+    private String name;
+    private int age;
+    private Car car;
+    public Person(){}
+    public Person(String name, int age){
+        this.setName(name);
+        this.setAge(age);
+    }
+    public Person(String name, int age, Car car){
+        this.setName(name);
+        this.setAge(age);
+        this.setCar(car);
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
+    }
+
+    public Car getCar() {
+        return car;
+    }
+
+    public void setCar(Car car) {
+        this.car = car;
+    }
+}
+#+end_src
+** 自身关联
+自身关联的代码
+#+begin_src java
+package work.sayno.www;
+
+public class Union {
+    public static void main(String[] args) {
+        System.out.println("类关联结构");
+        Person zgl = new Person("周国良", 20);
+        System.out.println("生成汽车");
+        Car bwm = new Car("宝马", 200000);
+        System.out.println(zgl.getCar());
+        System.out.println("绑定汽车");
+        zgl.setCar(bwm);
+        System.out.println(zgl.getCar());
+        System.out.println("连接好兄弟");
+        Person zt = new Person("周通", 21);
+        System.out.println("兄弟买车");
+        Car kln = new Car("库里南", 1000000);
+        zt.setCar(kln);
+        System.out.println("连接好兄弟");
+        System.out.println(zgl.getBrother());
+        zgl.setBrother(zt);
+        System.out.println(zgl.getBrother());
+
+        Person zy = new Person("周x", 21);
+        System.out.println("兄弟买车");
+        Car kln2 = new Car("库里南2", 1000000);
+        zy.setCar(kln2);
+        zgl.setBrother(zy);
+        for(Person temp: zgl.getBrother()){
+            System.out.println(temp.getCar());
+        }
+    }
+}
+package work.sayno.www;
+
+public class Car {
+    private String name;
+    private double price;
+    public Car(){}
+    public Car(String name, double price){
+        this.setName(name);
+        this.setPrice(price);
+    }
+
+    public String toString(){
+        return "车名：" + this.name + "；车的价值：" + this.price;
+    }
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
+}
+package work.sayno.www;
+
+import java.util.ArrayList;
+
+public class Person {
+    private String name;
+    private int age;
+    private Car car;
+    private ArrayList<Person> brother = new ArrayList<Person>();
+    public Person(){}
+    public Person(String name, int age){
+        this.setName(name);
+        this.setAge(age);
+    }
+    public Person(String name, int age, Car car){
+        this.setName(name);
+        this.setAge(age);
+        this.setCar(car);
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
+    }
+
+    public Car getCar() {
+        return car;
+    }
+
+    public void setCar(Car car) {
+        this.car = car;
+    }
+
+    public ArrayList<Person> getBrother() {
+        return brother;
+    }
+
+    public void setBrother(Person person) {
+        this.brother.add(person);
+    }
+
+    public String toString(){
+        ArrayList<Person> temp = this.getBrother();
+        StringBuffer brother_name = new StringBuffer();
+        for (Person item:temp){
+            brother_name.append(item.getName()).append("、");
+        }
+        return "名字：" + this.getName() + " 年龄：" + this.getAge() + " 汽车" + this.getCar() +
+        " 兄弟：" + brother_name;
+    }
+}
+
+#+end_src
+** 合成设计
+像一台电脑可以拆分为 CPU 主机 显示器等，这就是合成设计。
+
+* 泛型
+主要用于结果多数据类型的问题，
+#+begin_src java
+public class Point {
+    private Object x;
+    private Object y;
+    public Point(){}
+    public Point(Object x, Object y){
+        this.setX(x);
+        this.setY(y);
+    }
+}
+#+end_src
+如果像上面一样定义那么，可以会出现数据类型混乱，如
+#+begin_src java
+public class Basic {
+    public static void main(String[] args) {
+        System.out.println("泛型的学习");
+        Point t = new Point(1, 2);
+        System.out.println(t);
+        Point t2 = new Point(1.2, 4.5);
+        System.out.println(t2);
+        Point t3 = new Point("东经112", "北纬20");
+        System.out.println(t3);
+        Point t4 = new Point(1, "北纬23");
+        System.out.println(t4);
+    }
+}
+#+end_src
+泛型的诞生就是没了减少这种问题的产生。
+** 泛型的本质
+类中的属性或者方法的相应的数据类型可以由实例化的时候来决定，在类定义的时候明确定义占位符（泛型标记）。
+** 基本使用
+*类或者接口追加了泛型之后，如果不设置泛型类型的时候，会自动使用 Object 类型，在编译的时候会报错* 。
+#+begin_src java
+class ReallyPoint <T>{
+    private T x;
+    private T y;
+    public ReallyPoint(){}
+    public ReallyPoint(T x, T y){
+        this.setX(x);
+        this.setY(y);
+    }
+
+    public T getX() {
+        return x;
+    }
+
+    public void setX(T x) {
+        this.x = x;
+    }
+
+    public T getY() {
+        return y;
+    }
+
+    public void setY(T y) {
+        this.y = y;
+    }
+
+    @Override
+    public String toString() {
+        return "ReallyPoint{" +
+                "x=" + x +
+                ", y=" + y +
+                '}';
+    }
+}
+public class Basic {
+    public static void main(String[] args) {
+        System.out.println("使用泛型");
+        ReallyPoint<Integer> reallyPoint1 = new ReallyPoint<Integer>(1, 2);
+        ReallyPoint<String> reallyPoint2 = new ReallyPoint<String>("北纬20", "东经120");
+        System.out.println(reallyPoint1);
+        System.out.println(reallyPoint2);
+    }
+}
+
+#+end_src
+
+#+RESULTS:
+: 使用泛型
+: ReallyPoint{x=1, y=2}
+: ReallyPoint{x=北纬20, y=东经120}
+** 泛型使用注意点
+1. 泛型之中之允许设置引用类型，如果要使用基本数据类型，那就使用包装类
+2. 后面的泛型可以省略 ~ReallyPoint<Integer> reallyPoint1 = new ReallyPoint<Integer>(1, 2);~ 可以简化为 ~ReallyPoint<Integer> reallyPoint1 = new ReallyPoint<>(1, 2);~

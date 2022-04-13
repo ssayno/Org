@@ -1,0 +1,57 @@
+#+TITLE: Maven
+* Preface
+This Blog is used for write down how to install Maven on Arch Linux, and basic useage.
+** Install
+On Arch Linux, you can install Maven with command ~sudo pacman -S maven~, then use command ~mvn -v~ to know some message about the Maven. You can see Maven is installed on the ~/opt/maven~ (~/opt~) is default software configuration.
+** Configuration
+In gernal, you should add local repo, which is storaged the jar package installed by Maven. in the ~/opt/maven/conf/setting.xml~ like ~<localRepository>/path/to/local/repo</localRepository>~, and you need add mirror for maven.
+#+begin_export xml
+<mirror>
+    <id>aliyunmaven</id>
+    <mirrorOf>*</mirrorOf>
+    <name>aliyun repo</name>
+    <url>https://maven.aliyun.com/repository/public</url>
+</mirror>
+#+end_export
+As normal, mirror is used for speed up when you download some packages.
+** Others
+In here, writing down how to install and use mysql on Arch Linux, you can use pacman to install ~mariadb~, such as ~sudo pacman -S mariadb~, then
+1. ~mariadb-install-db --user=mysql --basedir=/usr --datadir=/var/lib/mysql~ before ~systemctl enable mariadb.service~
+2. ~systemctl enable mariadb.service~ (auto start when you login) and ~systemctl enable mariadb.service~
+3. ~mysql_secure_installation~ to config some basic information.
+* Basic useage
+1. compile
+2. clean
+3. test
+4. packages
+5. install
+** IDEA with Maven
+In IDEA ~File --> Settings~, search *Maven*, you should change the ~Maven home path~ to ~/opt/maven~, ~User setting file~ to ~/opt/maven/conf/setting.xml~.
+* Maven coordinate
+** Coordinate
+1. Coordinate in maven is the unique idendifies.
+2. Use coordinate to get dependency for a project.
+** How to write
+1. groupId: define name of the Maven project's group.(In gernal, reverse the domain, like *com.alibaba*)
+2. artifactId: define the name of Maven project.(In gernal, it's moudle name, like *mysql*)
+3. version: define current version
+#+begin_src xml
+<dependency>
+    <groupId>mysql</groupId>
+    <artifactId>mysql-connector-java</artifactId>
+    <version>8.0.28</version>
+</dependency>
+#+end_src
+In gernal, you just need searc ~maven <dependency>~ if you want to install dependency.
+** Plugin
+Install ~Maven Helper~ plugin, it's useful.
+** Scope
+When you want to set scope for a jar package, you can use ~<scope></scope>~
+| scope    | example           |
+|----------+-------------------|
+| compile  | logback           |
+| test     | Junit             |
+| provided | serlet-api        |
+| runtime  | JDBC drive        |
+| system   | local jar package |
+In gernal, ~compile~ is the default.

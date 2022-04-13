@@ -1,0 +1,6 @@
+#+Title: Usb
+* Preface
+This Blog is used for wirte down how to use USB in Linux.
+** Start
+First, you should install ~usbutils~ by command ~sudo pacman -S usbutils~.
+

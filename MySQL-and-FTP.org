@@ -1,0 +1,40 @@
+#+BLOG: myblog
+#+POSTID: 148
+#+DATE: [2022-04-27 Wed 12:25]
+#+TITLE: MySQL And FTP
+* Preface
+Write down how to build MySQL and FTP server in Lighthouse.
+** MySQL
+1. ~sudo apt-get install mysql-server mysql-client~, after this, use commands following.
+   #+begin_src shell
+sudo mysql # login in
+use mysql; # use mysql databases;
+update user set plugin='mysql_native_wordpress' where user='root';
+flush privileges;
+   #+end_src
+2. ~sudo mysql_secure_installation~ set the basic cofiguration for MySQL;
+3. Then you can login with command ~mysql -u root -p~
+4. Now, we will create a use for remote login.
+   #+begin_src shell
+# login successfully
+mysql -u root -p
+# create a database for remote
+create databases remote;
+# create a user
+create user 'mysqluser'@'%' indentified by 'password';
+# grant
+grant all on remote.* to 'mysqluser'@'%';
+flush privileges;
+   #+end_src
+5. Then, execute command following
+   #+begin_src shell
+cd /etc/mysql/mysql.conf.d
+vim mysqld.conf
+# find bind-address and comment it;
+sudo systemctl enable mysql
+sudo systemctl start mysql
+   #+end_src
+6. The most important step is open the 3306 port on your console.(Tengxunyun or Aliyun).
+7. Finally, you can use command login remotely: ~mysql -u mysqluser -h <your-IP> -p~
+** FTP
+Hold it for a while, update when you have time.:-)

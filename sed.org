@@ -1,0 +1,141 @@
+#+BLOG: myblog
+#+POSTID: 153
+#+DATE: [2022-04-28 Thu 22:19]
+#+TITLE: Sed
+#+STARTUP:show2levels
+* Preface
+This Blog is used for writing down the basic regex patten when use sed and awk in bash script.
+** Brackets
+In sed and awk script(how about the shell), the different bracket have different format when it's used in regex patten. Today, it's a little late, I will write down these information tomorrow.
+** Note
+We all know that the three musketeers of Linux are grep, sed and awk, =grep= have a more useful version called =egrep=, which support extend regular expression.(we will recommend it below.)
+1. =sed= and =grep= don't support extend regex.
+2. =egrep= and =awk= support extend regex.
+So, they have different regular expression when they used. For example
+#+begin_src shell
+#!/bin/bash
+echo '{}' | sed -n '/{}/p'
+echo "This is a seperator"
+echo '{}' | awk '/\{\}/ { print }'
+#+end_src
+Like extended regex introduced follow, if sed and awk want to match ~()~ and ~{}~, don't need escape, but if want to match ~[]~ you must to escape it, like ~\[\]~.
+#+begin_src shell
+echo '[]' | sed -n '/\[\]/p'
+echo '{}' | sed -n '/{}/p'
+echo '()' | sed -n '/()/p'
+#+end_src
+
+#+RESULTS:
+| [] |
+| {} |
+| () |
+
+** Extended Regular Expression
+There are all extend regex.(Supported by *awk* and *egrep*)
+| Symbol | Meaning                                                                                                                              |
+|--------+--------------------------------------------------------------------------------------------------------------------------------------|
+| +      | Match one or more occurrentces of the preceding regular expression                                                                   |
+| ?      | Match zeor or one occurrentces of the preceding regular expression                                                                   |
+| {n,m}  | {n,} represent occur at least n times, {n,m} occur n to m times, {n} represent occur n times(Just for *POSIX egrep* and *POSIX awk*) |
+| \Vect  | Choice, for example, ~a\Vectb~ means match a or b                                                                                    |
+| ()     | group regular expression                                                                                                             |
+** Use shell variable in sed or awk
+If you want to use shell variable in sed or awk, you must use double quote not single quote. ~$~ in single quote not expand. You should first escape the escape symbol ~\~.
+ #+begin_src shell
+variable="{}"
+echo "{}" | sed -n "/$variable/p"
+echo "aaa" | sed -n "/a\\{3\\}/p"
+echo "a{}" | sed -n "/a{}/p"
+ #+end_src
+
+ #+RESULTS:
+ | {}  |
+ | aaa |
+ | a{} |
+
+** POSIX character class additions
+There are three POSIX character, but for me, only can understand one three of them.
+*** Character Class
+| Class        | Matching Characters                             |
+|--------------+-------------------------------------------------|
+| ~[:alnum:]~  | Printable character(include whitespace)         |
+| ~[:alpha:]~  | Alphabetic character                            |
+| ~[:blank:]~  | Space and tab character                         |
+| ~[:graph:]~  | Printable and visible(no-space) character       |
+| ~[:punct:]~  | Punctuation characters(*Include chinese punct*) |
+| ~[:upper:]~  | Uppercase characters                            |
+| ~[:lower:]~  | Lowercase characters                            |
+| ~[:xdigit:]~ | Hexadecimal digits                              |
+There are two classed, Collating symbols, Equivalence classed.(Uncommonly used)
+#+begin_src shell
+echo "??" | sed -n '/[[:punct:]]*/p'
+echo "." | sed -n '/[[:punct:]]/p'
+echo ",," | sed -n '/[[:punct:]]/p'
+echo "，" | sed -n '/[[:punct:]]/p'
+#+end_src
+** Pattern Space
+Here is a important concept called pattern space, shortly, *The contents of the pattern space are dynamic and do not always match the original input line.* When all the instructions have been applied, the current line is output and the next line of input is read into the pattern space.
+** Sed options
+Sed files have the extension ~.sed~
+| Option | Description                                                                               |
+|--------+-------------------------------------------------------------------------------------------|
+| ~-n~   | Just output the matched line                                                              |
+| ~-e~   | Add more pattern and command                                                              |
+| ~-f~   | specified file                                                                            |
+| ~-r~   | Support extended regular expression(Introduce above)                                      |
+| ~-i~   | Modify the file directly(Before use this, you should have ~p~ command to test the output) |
+** Pattern usage table
+In pattern, ~$~ symbol represent the last line of file. In sed, you can use address to restrict the scope, such as
+#+begin_src shell
+sed -i '/abc/s/ab/cd/g'
+#+end_src
+| Pattern                      | Meaning                                                                              |
+|------------------------------+--------------------------------------------------------------------------------------|
+| 10command                    | Match 10-th line                                                                     |
+| 10,20command                 | Match from 10 t0 20 line                                                             |
+| 10,+5command                 | Match from 10-th, then add 5 lines                                                   |
+| /pattern1/command            | Lines of match pattern1                                                              |
+| /pattern1/,/pattern2/command | Start from the first line match pattern1, end at the first line of matching pattern2 |
+| 10,/pattern1/command         | Start from 10-th line, end at the first line matching pattern1                       |
+| $command                     | Operation at the end line of input(For instance, ~$p~ print the last line of input)  |
+** Command
+#+BEGIN_EXPORT html
+<table border="1">
+  <tr>
+    <th>Type</th>
+    <th>Command</th>
+    <th>Meaning</th>
+  </tr>
+  <tr>
+    <th>Delete</th>
+	<th>d</th>
+	<th>Delete</th>
+  </tr>
+  <tr>
+    <td rowspan="4">Substitue</td>
+    <td>s/old/new</td>
+    <td>Substitue the first <em>old</em> with <em>new</em> </td>
+  </tr>
+  <tr>
+    <td>s/old/new/g</td>
+    <td>Substitue all <em>old</em> with <em>new </em></td>
+  </tr>
+  <tr>
+    <td>s/old/new/2g</td>
+    <td>Sub1stitue old with new from 2-th old</td>
+  </tr>
+  <tr>
+    <td>s/old/new/ig</td>
+    <td>Substitue all <em>old</em> with <em>new </em>, ignore case</td>
+  </tr>
+  <tr>
+    <td rowspan=4>Add</td>
+    <td>a</td>
+	  <td>Add after this line</td>
+  </tr>
+  <tr>
+    <td>i</td>
+	<td>Add before this line</td>
+  </tr>
+</table>
+#+end_export

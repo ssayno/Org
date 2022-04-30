@@ -78,25 +78,6 @@ sed '/python/w /tmp/temp' sed.txt
 # 替换每行的第一个
 sed -i 's/python/java/' sed.txt
 #+end_src
-
-#+RESULTS:
-| I      | like | python |      |
-| I      | like | python |      |
-| I      | like | PYTHON |      |
-| I      | like | python |      |
-| I      | like | PYTHON |      |
-| I      | like | python |      |
-| This   | is   | a      | test |
-| This   | is   | a      | test |
-| I      | like | PYTHON |      |
-| Hadoop | is   | good   |      |
-| I      | like | python |      |
-| This   | is   | a      | test |
-| This   | is   | a      | test |
-| This   | is   | a      | test |
-| I      | like | PYTHON |      |
-| Hadoop | is   | good   |      |
-
 *** pattern 用法表
 | 匹配模式                     | 含义                                                 |
 |------------------------------+------------------------------------------------------|

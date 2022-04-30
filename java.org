@@ -10,6 +10,38 @@
 3. ~void~ 主方法是一切的起点，开始无返回。
 4. ~main~ 系统定义的方法名称。
 5. ~String[] args~ 命令行参数。
+* Object 类
+Object 类主要特点是可以解决参数的统一问题，使用 Object 类可以接收所有的数据类型。
+** 简介
+Java 中只有一个类没有继承关系，就是 Object 类，所有类都是 Object 的子类。考虑到所有的继承问题，所以该类提供有无参构造方法， 这样在类定义的时候，不会出现构造方法调用失败的原因。
+** 获取对象的信息
+~toString()~ 方法，定义类的时候，推荐直接进行覆写。
+** 对象比较
+~equals()~ 对象比较的处理，还是推荐覆写。
+默认的 ~equals()~ 方法
+#+begin_src java
+public boolean equals(Object obj){
+    return (this == obj);
+}
+#+end_src
+只是进行了地址比较，如果我们要进行正确的判断，我们需要在子类中覆写该方法，一般来说，IDE 会提供这个操作。
+#+begin_src java
+@Override
+public boolean equals(Object o) {
+    // 判断是不是本身
+    if (this == o) return true;
+    // 判断是否是 NULL 以及是否 是同一个 class
+    if (o == null || getClass() != o.getClass()) return false;
+    // 向下转型
+    Student student = (Student) o;
+    // 进行内容的判断，根据自己的 属性进行书写。
+    return math == student.math && English == student.English;
+}
+#+end_src
+覆写 ~equals()~ 的三大注意点
+1. 是否是同一个对象（同一个地址） ~if(this == o)~
+2. 传入是否为空
+3. 以及是否是同一个 ~class~ ~if(o==null && !(o instanceof Person))~ 或者 ~if(o=null &&this.getClass() != o.getClass())~ （推荐后面这种，简单）
 * Stream
 数据流: 就是字节数据（二进制数据），java 中有两个包进行操作
 1. 字节处理流： ~OutputStream~ 和 ~InputStream~
@@ -608,3 +640,602 @@ public class Basic {
 ** 泛型使用注意点
 1. 泛型之中之允许设置引用类型，如果要使用基本数据类型，那就使用包装类
 2. 后面的泛型可以省略 ~ReallyPoint<Integer> reallyPoint1 = new ReallyPoint<Integer>(1, 2);~ 可以简化为 ~ReallyPoint<Integer> reallyPoint1 = new ReallyPoint<>(1, 2);~
+
+** 泛型通配符
+当一个方法接受使用泛型的类的时候，不能确定该类泛型的具体类型，例如
+#+begin_src java
+class Message<T>{}
+public static void accept(Message<> msg)
+#+end_src
+此时 accept 方法不知道接受的 Message 类的类型， ~Message<String> or Message<Integer>~ 都可能作为参数传递，所以这个时候 *泛型通配符* 的作用就出来了， ~?~ 就是泛型通配符
+#+begin_src java
+public static void accept(Message<?> msg)
+#+end_src
+此时的 accept 方法可以接受所有的泛型类型，而且，此时最重要的是，由于使用的是 ~?~ 通配符，不清楚具体类型，无法修改类对象中的数据
+** 通配符和泛型设置上下限
+1. ~<? extends 类>~ 设置泛型的上限
+#+begin_src java
+class Message<T extends Number>
+// 那么Message 只能是 Number 或者 Number 类的子类
+#+end_src
+2. ~<? super 类>~ 设置泛型的下限
+#+begin_src java
+class Message<T super String>
+// 那么 Message 只能 String 以及 String 的父类
+#+end_src
+所以说要多看 Java Doc 来了解类之间的继承关系。
+** 泛型接口
+如果一个接口设置了泛型，例如
+#+begin_src java
+interface IMessage<T>{...}
+#+end_src
+那么继承或者实现该接口的子类或者接口（接口的可以多继承接口）有 *两种方式实现泛型*
+1. 继续设置泛型
+#+begin_src java
+class Message<S> implements IMessage<S>{...}
+#+end_src
+2. 直接实现泛型
+#+begin_src java
+class Message implements IMessage<String>{...}
+// 实例化对象
+Message<String> msg = new Message<>();
+#+end_src
+* Java 类集
+Java 从 JDK1.2 开始引入了类集开发框架，所谓的 *类集* 就是一套动态数组的实现方案，在实际的开发中，数组是必须的，但是传统的数组实现非常繁琐，而且由于长度问题，导致操作是比较麻烦的，依靠数据结构来实现动态数组，其中较为重要的是 1. 链表 2. 树
+1. 数据结构的代码实现困难，对于一般的开发者是无法进行使用的。
+2. 对于链表或者树更新维护比较麻烦。
+3. 性能可能存在问题。
+基于以上原因，类集应景而生。
+** 核心接口
+1. Collection
+2. List
+3. Set
+4. Map
+5. Iterator
+6. Enumeration
+7. Queue
+8. ListIterator
+** Collection 接口
+~java.util.Collection~ 是单值集合操作的最大父接口，该接口中定义了所有的单值集合操作方法。
+** List 接口
+List 是 Collection 的子接口。有了更多的操作方法，但是由于还是一个接口，所以还是需要使用子类来使用，下面是是那个常用的子类
+1. ArrayList
+2. Vector
+3. LinkedList
+*** ArrayList 类
+~ArrayList~ 是 List 使用最多的子类，
+
+* Java 注解(Annotation)
+Annotation 是从 JDK1.5 之后提出的新的技术结构，可以有效的减少的程序配置的代码，还可以进行一些结构化定义，Annotation 是以一种注解的形式实现程序的开发。
+程序开发的过程
+1. 程序相关的的所有数据都写入到程序代码之中，这样在后期的维护和更改不会方便。
+2. 引入配置文件，在配置文件中定义全部要使用的服务器资源。（1. 在配置文件不多的时候，这样的配置非常简单，但是当配置文件过多的时候，开发也会变得困难。 2. 所有的操作都要配置文件完成，对于开发不是那么的方便
+3. 将配置文件重新写入到程序里面，通过一些特殊的标注和程序代码进行分离，这就是注解（Annotation）。
+   1. 实际上，全部使用注解开发难度还是高，所以现在基本上是 Annotation 和配置文件一起使用。
+** 常见的注解
+1. ~@Override~ 当使用继承的时候，如果忘记书写 ~extends~ ，或者方法名字写错。在覆写的方法上加上 ~@Override~ 会给你相关信息。（主要是在开发的时候提供相关报错
+2. ~@Deprecated~ 过期声明
+3. ~@SuppressWarnings~ 压制警告，让警告信息不出现 ~@SuppressWarnings({"deprecation"})~ 压制过期警告。
+* 面向对象三大特性
+** 封装性
+类对象的属性封装：就是用 ~private~ 修饰变量（属性），这样外部无法直接使用该变量。
+#+begin_src java
+public class Person {
+    private String name;
+    private byte age;
+    public Person(String name, byte age){
+        this.name = name;
+        this.age = age;
+    }
+    public String toString(){
+        return "Name is " + this.name + " and age is " + this.age;
+    }
+}
+public class Basic {
+    public static void main(String[] args) {
+        System.out.println("类的基本使用");
+        Person person = new Person("zgl", (byte) 12);
+        System.out.println(person.toString());
+        System.out.println(person);
+    }
+}
+
+#+end_src
+这样的话， ~person.name or person.age~ 是不允许的。定义 ~setterxxx()~ 和 ~getterxxx()~ 函数
+
+** 继承性
+** 多态性
+多态性是在继承性的基础上扩展来，可以实现父子类之间的互相转换处理（向上或者向下转型
+*** 基本概念
+1. 方法的多态性
+    1. 方法的重载：同一个方法名称可一根据传入的参数的类型过着个数的不同实现不同的功能。
+    #+begin_src java
+public class Basic {
+    public static void main(String[] args) {
+        print();
+        print("大帅哥");
+    }
+    public static void print(){
+        System.out.println("Hello, IDEA");
+    }
+    public static void print(String  name){
+        System.out.println("Hello, " + name);
+    }
+}
+    #+end_src
+
+    #+RESULTS:
+    : Hello, IDEA
+    : Hello, 大帅哥
+    2. 方法的覆写：根据子类的不同，方法实现的方式不同
+2. 对象的多态性：父子实例之间的转换处理
+    1. 对象向上转型：父类 父类实例 = 子类实例；自动完成转换(人是动物)
+    2. 对象向下转型：子类 子类实例 = （子类）父类实例；强制完成
+在实际情况下， 基本上是使用向上转型， *对于对象的向下转型往往都在使用子类的特殊功能* 。
+*** 对象向上转型(接收或者返回的统一性)
+#+begin_src java
+public class Basic {
+    public static void main(String[] args) {
+        System.out.println("对象的多态性");
+        Channel channel = new NetChannel(); // 对象的向上转型
+        fun(new NetChannel());
+        fun(new Channel());
+        fun(new WebChannel());
+    }
+    public static void fun(Channel channel){
+        channel.print();
+    }
+}
+@Override
+public class WebChannel extends Channel{
+    public void print(){
+        System.out.println("服务器通道");
+    }
+}
+@Override
+public class NetChannel extends  Channel{
+    public void print(){
+        System.out.println("子类通道");
+    }
+}
+#+end_src
+使用向上转型，可以用一个参数来接收多种类型的参数。这就是向上转型的有限， *可以对参数进行统一的设计* ，这样比重载方便多了，还有利于代码后期的维护。
+*** 对象向下转型
+必须本身是才能够进行转型。
+*** instanceof 关键字
+向下转型本身是一件存在有安全隐患，所以为了保证向下转型的正确性，在进行转型之前，判断某个实例是否是某个类的对象，这就是关键字 ~instanceof~ 关键字的作用。
+基本语法
+#+begin_src java
+对象 instanceof 类
+#+end_src
+返回一个 ~boolean~ 类型。 *在以后的开发中，进行向下转型之前，可以进行一次判断，再进行向下转型。*
+* 抽象类
+在学习 OOP 三大特性之一的继承性质的时候，子类可以选择是否覆写父类的方法，父类无法对子类进行强制约定，如果需要强制覆写，可以使用抽象类，在实际上，很少出现继承一个完善的类。父类基本上是优先考虑使用抽象类
+** 定义
+抽象类的主要作用是在于对子类中覆写方法进行约定，在抽象类可以去定义一些抽象方法来实现这个约定，抽象方法是使用了 ~abstract~ 关键字的并且不需要提供方法体，而抽象方法必须放在抽象类中（用 ~abstarct~ 修饰的类。
+本质上，抽象类就是在普通类中在满足抽象类的条件下添加了一些抽象方法。 *抽象类无法直接实例化* ，抽象类不是完整的，想用抽象类的原则
+1. 抽象类必须要有子类
+2. 抽象类的子类不能是抽象类，而且要覆写所有的抽象方法。
+3. 抽象类的对象实例化可以利用对象多态性通过子类向上转型完成。
+#+begin_src java
+public class AbstractUsage {
+    public static void main(String[] args) {
+        System.out.println("抽象类的学习");
+        Message message = new MySQLMessage();
+        message.setType("周国良");
+        System.out.println(message.getConnectInfo());
+    }
+}
+public class MySQLMessage extends Message{
+    @Override
+    public String getConnectInfo() {
+        return this.getType() + this.getClass();
+    }
+}
+public abstract class Message {
+    private String type;
+    public abstract String getConnectInfo();
+    public void setType(String type){
+        this.type = type;
+    }
+    public String getType(){
+        return this.type;
+    }
+}
+#+end_src
+
+#+RESULTS:
+
+抽象类除了要求子类必须覆写抽象方法，其余和普通类没有什么区别。
+抽象类使用几点意见
+1. 抽象类无法直接实例化
+2. 抽象类之中主要目的是进行过度操作使用，所以当使用抽象类进行开发的时候，往往是在设计中要解决类继承问题代码重复问题。
+** 使用说明
+1. 抽象类由于是设计为子类继承使用，所以无法使用 ~final~ 关键字。
+2. 抽象类作为普通类的加强版本出现，（抽象类的组成就是在普通类的基础上扩展来的），像普通类中有属性和方法，所以抽象类还是可以有 *构造方法* ，子类会按照子类对象的实例化原则进行构造调用。
+#+begin_src java
+public class MySQLMessage extends Message{
+    public MySQLMessage(String str){
+        super(str);
+    }
+    @Override
+    public String getConnectInfo() {
+        return this.getType() + this.getClass();
+    }
+}
+public abstract class Message {
+    private String type;
+    public Message(String type){
+        this.setType(type);
+    }
+    public abstract String getConnectInfo();
+    public void setType(String type){
+        this.type = type;
+    }
+    public String getType(){
+        return this.type;
+    }
+}
+#+end_src
+3. 抽象类可以没有抽象方法，但是还是无法直接实例化。
+4. 抽象类可以定义 ~static~ 方法，而且不受到 ~abstract~ 限制。 *static 方法永远不受到实例化对象或者结构的限制*
+** 模板设计模式
+设计三类事物
+1. 机器人：不休息，只要补充能量和努力工作。
+2. 人：需要休息、需要吃饭以及努力的工作。
+3. 猪：需要休息、要吃饭、不工作
+#+begin_src java
+public class Main {
+    public static void main(String[] args) {
+        System.out.println("设计模板");
+        Up reboot = new Reboot();
+        reboot.command(Up.EAT);
+        Up man = new Man();
+        System.out.println("人的操作");
+        man.command(Up.SLEEP);
+        Up pig = new Pig();
+        System.out.println("猪的操作");
+        pig.command(Up.WORK);
+    }
+}
+
+public abstract class Up {
+    public static final int EAT = 1;
+    public static final int SLEEP = 5;
+    public static final int WORK = 10;
+    public void command(int code){
+        switch (code){
+            case EAT:
+                this.eat();
+                break;
+            case SLEEP:
+                this.sleep();
+                break;
+            case WORK:
+                this.work();
+                break;
+            case EAT + SLEEP + WORK:{
+                this.eat();
+                this.work();
+                this.sleep();
+            }
+        }
+    }
+    public abstract void eat();
+    public abstract void sleep();
+    public abstract void work();
+}
+public class Man extends Up{
+
+    @Override
+    public void eat() {
+        System.out.println("吃饭");
+    }
+
+    @Override
+    public void sleep() {
+        System.out.println("睡床上");
+    }
+
+    @Override
+    public void work() {
+        System.out.println("一天工作 8 个小时");
+    }
+}
+public class Pig extends Up{
+
+    @Override
+    public void eat() {
+        System.out.println("啥都吃");
+    }
+
+    @Override
+    public void sleep() {
+        System.out.println("睡猪圈");
+    }
+
+    @Override
+    public void work() {
+        System.out.println("打工，这辈子不可能打工的");
+    }
+}
+#+end_src
+不过抽象类还是难的，对着写了一遍，我还是没理解这个作用。
+
+* 包装类
+包装类的主要功能是针对与 *基本数据* 类型的对象转换而实现的
+** 基本定义
+Object 类最大的特点就是所有类的父类，可以接收所有的数据类型，但是基本数据类型不是类，在 ~泛型~ 里面只能是引用数据类型，基本数据类型无法使用，所以这个时候需要的是将基本数据类以类的形式作为处理，这就是所谓的 *包装类* 。基本数据类型进行包装类型之后，可以像对象一样进行引用传递。
+1. 装箱：将基本数据类型保存在包装类之中。
+2. 拆箱：从包装类对象中获取基本数据类型。
+基本数据类型的 *装箱* ：
+| 基本数据类型 | 包装类    |
+|--------------+-----------|
+| int          | Integer   |
+| char         | Character |
+| byte         | Byte      |
+| double       | Double    |
+| short        | Short     |
+| long         | Long      |
+| float        | Float     |
+| boolean      | Boolean   |
+** 说明
+在 Java 中包装类提供两种类型
+1. 对象型包装类：（Object 直接子类）：Boolean、Character
+2. 数值型包装类：（Number(abstarct) 子类）：Byte、Short、Integer、Long、Float、Double.(Number 是 Object 子类)；
+
+** 装箱与拆箱
+基本数据类型的装箱就是为了基本数据类型转化为对象的操作，衍生了基本数据类型和包装类之间有了关系
+*** 数据装箱
+一般可以使用构造方法，但是现在已经废弃（Java 9）
+*** 数据拆箱
+从包装类中获取基本数据类型
+1. Number 数值型包装类提供了拆箱的方法（ ~.xxxValue()~ ）
+2. Boolean 型包装类提供了 ~booleanValue()~
+从 JDK 1.9 之后，包装类的构造方法基本上被舍弃了，从 JDK 1.5 之后提供了自动装箱和拆箱。也就是说可以直接使用包装类定义
+#+begin_src java
+Integer intValue = 10;
+System.out.println(intValue++);
+#+end_src
+使用自动装箱最大的好处就是可以实现 Object 接收基本数据类型的操作。
+#+begin_src java
+Object obj = 19.2;
+// 自动装箱为 Double 包装类
+// 但是还有手动向下转型
+double num = (Double) obj;
+#+end_src
+*** 包装类相关注意事项
+1. 包装类的进行比较的时候，一定要使用 ~equals()~ 完成！
+
+* 接口
+接口可以理解为一个纯粹的抽象类（最原始的定义之中只有抽象方法和全局变量），但是从 JDK1.8 之后，由于引入了 ~Lambda~ 函数式编程，添加了 *普通方法和静态方法* ，从设计角度来讲，接口的组成一抽象方法和全局常量为主。
+*
+
+* JDBC usage
+JDBC 的相关使用方法
+1. 准备四大参数
+   #+begin_src java
+String driverClassName = "com.mysql.cj.jdbc.Driver";
+// jdbc 协议的格式 jdbc:厂商（mysql):子协议/数据库名称
+String url = "jdbc:mysql://localhost:3306/test";
+String user = "sayno";
+String password = "123456";
+   #+end_src
+2. 加载驱动
+   #+begin_src java
+Class.forName(driverClassName);
+
+   #+end_src
+3. 得到 Connection
+#+begin_src java
+Connection connection = DriverManager.getConnection(url, user, password);
+#+end_src
+4. 然后就是对于数据库进行增删改查（这也是对于数据库最常见的也是最基本的操作）
+5. 得到 Statement （向数据库传递消息的 DML DDL）
+#+begin_src java
+Statement stment = connection.createStatement();
+#+end_src
+** Basic
+*** Connection
+*** Statement
+1. int executeUpdate() 执行 增、删、改
+2. int executeQuery() 执行查询语句，返回结果是 ResultSet;
+3. boolean execute() 执行 DML 和 DDL 语句，不是那么的常用。
+*** ResultSet
+ResultSet 表示的是结果集合，表示的是一个数据二维表格，结果集有三个特征（使用 ~connection.createStatement()~ 确定结果集的特征
+1. 是否可滚动
+2. 是否敏感
+3. 是否可更新
+4. ~connection.createStatement()~ 的两个参数（都是 int 数据类型
+#+begin_src java
+// 第一个参数
+ResultSet.TYPE_FORWORD_ONLY 不滚动结果集
+ResultSet.TYPE_SCROLL_INSENSITIVE 滚动结果集，及时更新的数据不能立马显示
+ResultSet.TYPE_SCROLL_SENSITIVE 滚动结果集，及时更新的数据能够立马显示（没有数据库驱动进行支持
+// 第二个参数
+CONCUR_READ_ONLY: 结果集只是可读，不能通过修改结果集影响数据库。
+CONCUR_UPDATABLE: 结果集是可以更新的，对结果集的更新可以影响数据库。
+// 一般来说都是 不滚动，不影响数据库
+#+end_src
+MySQL 默认创建的是 *可滚动* 结果集。
+**** 常用的 API
+1. beforeFirst() 移动到最开始的位置
+2. afterLast() 移动到最后
+*** 预处理
+说实话，我已经快忘了 MySQL 的预处理了，
+**** prepareStatement
+1. 是 Statement 接口的子接口
+2. 可以防止 SQL 攻击（看了一下 SQL 攻击的原理，发现这个东西好像很有意思 [[https://zh.wikipedia.org/wiki/SQL%E6%B3%A8%E5%85%A5][SQL attack]].
+3. 提高效率（重复利用
+**** 利用方法
+1. 按照 MySQL 的预处理方法，参数使用 ~?~ 代替
+2. 使用 Connection 对象的 ~prepareStatement()~ 方法
+3. 使用模板方法为问号 ~?~ 进行赋值
+4. 调用 executeQuery() 或者 executeUpdate() 来获取结果。
+#+begin_src java
+public static boolean login2(String name, String money){
+    Connection connection = null;
+    Statement statement = null;
+    ResultSet set = null;
+    try{
+        String driverClassName = "com.mysql.cj.jdbc.Driver";
+        String url = "jdbc:mysql://localhost:3306/test";
+        String user = "sayno";
+        String password = "123456";
+        connection = DriverManager.getConnection(url, user, password);
+        String query = "select * from accout where id=? and money=?";
+        PreparedStatement preparedStatement = connection.prepareStatement(query);
+        preparedStatement.setString(1, name);
+        preparedStatement.setString(2, money);
+        if (set == null){
+            return false;
+        }
+        return set.next();
+    }
+    catch (Exception e) {
+        System.out.println(e.getMessage());
+        return false;
+    }finally {
+        try {
+            if (set != null) set.close();
+            if (statement != null) statement.close();
+            if (connection != null) connection.close();
+        }
+        catch (Exception e){
+            System.out.println(e.getMessage());
+        }
+    }
+}
+#+end_src
+**** 预处理的原理
+1. 检验 sql 的语法
+2. 编译：一个与函数相似的东西
+3. 执行：调用函数
+***** 优点
+1. 前提：连接的数据库必须支持预处理（目前来说基本都支持，但是 MySQL 中是默认的开启，需要手动开启
+2. 每个预处理语句就是和 sql 模板进行绑定，数据库先进行校验和编译，执行的时候只是传递参数给 ~?~
+3. 第二次执行的时候，不需要进行校验和编译的操作， *直接进行执行的操作*。
+** 查询操作
+#+begin_src java
+ResultSet set = statement.executeQuery(String select_yuju);
+// set.next() 光标向下移动一行
+
+while(set.next()){
+    // 相关操作
+    set.getInt(int value) // 获取第 i 列的元素
+    // 常用的就是
+        // 1. getString() 2. getInt()
+}
+#+end_src
+** 关闭资源
+先得到的资源先关闭
+1. set.close();
+2. statement.close();
+3. connection.close();
+** JDBC 的代码规范
+1. 在 try 外进行引用的定义 （四大件
+2. 在 try 内进行对象实例化 （Connection、Statement、ResultSet
+3. 在 finally 中进行资源的关闭
+   #+begin_src java
+    public static void query() throws Exception{
+        String driverClassName = "com.mysql.cj.jdbc.Driver";
+        String url = "jdbc:mysql://localhost:3306/test";
+        String user = "sayno";
+        String password = "123456";
+        Connection connection = null;
+        Statement statement = null;
+        ResultSet set = null;
+        try{
+            Class.forName(driverClassName);
+            connection = DriverManager.getConnection(url, user, password);
+            statement = connection.createStatement();
+            String select_str = "select * from accout";
+            set = statement.executeQuery(select_str);
+
+            while (set.next()){
+                System.out.println("编号：" + set.getString("id") + "余额：" + set.getDouble("money"));
+            }
+        }
+        catch (Exception e){
+            System.out.println(e.getMessage());
+        }
+        finally {
+            if (set != null){
+                set.close();
+            }
+            if (statement != null){
+                statement.close();
+            }
+            if (connection != null){
+                connection.close();
+            }
+        }
+    }
+   #+end_src
+
+** 数据库的事务（ACID
+1. 原子性(atomicity)
+事务中的所有 SQL 操作都是不可以再分割的原子单位，要么全部成功，要么全部失败
+2. 一致性(consistency)
+最重要的特性，事务执行之后，数据库状态和其他业务规则一致（转帐前后账户余额之和不会变化
+3. 隔离性(isolation)
+事务并发操作的时候，不同的事务应该隔离开来，使并发执行的事务不会互相干扰
+4. 持久性(durablity)
+一旦事务提交成功，事务中的所有的数据操作必须被持久化到数据库当中，即使数据库崩溃，也能保证通过某种机制进行数据的恢复。
+** MySQL 开启事务
+在 MySQL 中，每执行一次 SQL 语句，都是一个单独的事务，如果要在一个事务中开启多个事务，那么需要手动开启事务和手动结束事务
+1. start transcation(begin)
+2. commit(提交) 或者 rollback(回滚)
+** JDBC 中开启事务
+JDBC 中的开启事务的方法还是比较简单的，针对 Connection 对象进行操作。
+1. ~setAutoCommit(boolean t)~ 设置为是否自动提交事务
+2. ~commit()~ 提交事务
+3. ~rollback()~ 回滚事务
+#+begin_src java
+try{
+    connection.setAutoCommit(false);
+    // 相关操作
+    connection.commit();
+}catch(Exception e){
+    connection.rollback();
+}
+#+end_src
+4. *当事务开启之后，没有手动提交或者回滚，则会自动进行回滚。*
+
+* Java 内部类
+Java 的内部类还是一个完善的类结构（在一个类的内部继续使用 ~class~ 定义一个类）
+#+begin_src java
+package work.sayno.www;
+
+public class Anonymous {
+    private String msg = "www.sayno.work";
+    public void fun(){
+        Inner inner = new Inner();
+        inner.print();
+    }
+    class Inner{
+        public void print(){
+            System.out.println("这是一个内部类");
+            System.out.println(Anonymous.this.msg);
+        }
+    }
+}
+Anonymous anonymous = new Anonymous();
+anonymous.fun();
+#+end_src
+从代码结构上来看，内部类破坏了代码整体性质， 但是也有优势， *轻松的访问外部类的私有属性*
+** 内部类的相关说明
+在内部类中，可以通过实例化对象直接调用私有属性，不需要那些 setter 和 getter 方法进行调用（这也是最大的优势）
+1. 定义内部类的对象的格式比较的特殊，
+#+begin_src java
+外部类.内部类 内部类对象 = new 外部类().new 内部类()
+#+end_src
+2. 如果定义了内部类，那么使用 javac 进行编译的时候，会产生一个 ~Outer$Innter.class~ ，就是 ~Outer.Inner~ 的意思， *定义内部类的需要先实例化外部类的原因是：他们可以进行私有属性的相互访问，如果内部类需要访问外部类的的私有属性，而外部类没有实例化对象就会出现错误*
+3. 可以直接使用 ~private~ 定义私有内部类，那么就不需要顾及在外面实例化内部类的方法， 因为没了！
+4. 抽象类或者接口之中都可以定义内部结构（类或者接口
+5. 内部类学烦了，不学了。
+* Java 链表
+数组长度固定，不太方便使用，所以链表以及后面的类集产生，传统数组使用索引，不太方便进行动态管理
+
+* Java 枚举
+很多的变成语言都有枚举的概念，Java 是在 JDK1.5 之后才提出了枚举的概念，主要作用是用于定义有限个数对象的一种结构（多例设计），枚举就属于多例设计，

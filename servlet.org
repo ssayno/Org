@@ -1,0 +1,8 @@
+#+TITLE: Servlet
+* Preface
+Servlet 是 Java Web 的三大组件之一（Filter、Listener），它属于动态资源。 Servlet 的作用处理请求，服务器会把接收到的请求交给 Servlet 来处理。
+客户端发出登录请求，或者输出注册请求，这些请求都应该由 Servlet 来完成处理！ Servlet 需要我们自己来编写，每个 Servlet 必须实现 javax.serlet.Serlet 接口。
+* 实现 Servlet 的三种方式
+1. 实现 javax.servlet.Servlet 接口
+2. 继承 javax.servlet.GenericServlet 类
+3. 继承 javax.servlet.HttpServlet 类（推荐

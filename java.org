@@ -1239,3 +1239,333 @@ anonymous.fun();
 
 * Java 枚举
 很多的变成语言都有枚举的概念，Java 是在 JDK1.5 之后才提出了枚举的概念，主要作用是用于定义有限个数对象的一种结构（多例设计），枚举就属于多例设计，
+** 定义
+* Java 反射机制
+在 Java 中，之所以有如此多的开源技术支撑，很大的原因的 Java 的最大特征，反射机制，这个在日后项目的开发中非常的重要。 *所有的技术实现的目标只有一个：重用性。*
+对于 *反射技术* ，首先考虑“正”和“反”， *所谓“正”的操作，就是使用类的时候，先导入程序所在的包，人，然后进行实例化，然后调用方法。“反”就是根据实例化对象反推出类型。*
+#+begin_src java
+import java.util.Date;
+
+public class Test {
+    public static void main(String[] args) {
+        Date date = new Date();
+        System.out.println(date.getClass());
+    }
+}
+#+end_src
+上述就是通过实例化对象获取对象所属类型（说到底就是 ~getClass()~ 方法。
+** Java 反射编程
+Class 类的实例化操作，反射之中的所有核心操作都是通过 Class 类进行操作，有如下三种方式完成 Class 类的实例化，从 JDK1.5 之后加入了泛型的操作，（ *这三种方式都是需要掌握的*
+#+begin_src java
+public final class Class<T>
+extends Object
+implements Serializable, GenericDeclaration, Type, AnnotatedElement, TypeDescriptor.OfField<Class<?>>, Constable
+#+end_src
+*** 通过 Object 类支持
+Object 类可以通过实例化对象获得 Class， ~public final Class<?> getClass()~
+#+begin_src java
+import java.util.Date;
+
+public class Test {
+    public static void main(String[] args) {
+        Date date = new Date();
+        Class<? extends Date> cls = date.getClass();
+        System.out.println(cls);
+        System.out.println(cls.getName());
+    }
+}
+#+end_src
+
+#+RESULTS:
+: class java.util.Date
+: java.util.Date
+
+这个方式有个不是缺点的缺点，如果想要 Class，那么必须实例化对象。
+*** JVM 原生支持
+~类.class~ ：必须导入程序相应的包
+#+begin_src java
+import java.util.Date;
+
+public class Test {
+    public static void main(String[] args) {
+        Class<? extends Date> cls2 = Date.class;
+        System.out.println(cls2);
+        System.out.println(cls2.getName());
+    }
+}
+
+#+end_src
+
+*** Class 类支持
+在 Class 中提供一个操作的 ~static~ 方法，当初我们学 ~JDBC~ 的时候使用过， ~Class.forName(String className)~
+#+begin_src java
+import java.util.Date;
+
+public class Test {
+    public static void main(String[] args) {
+        Class<?> cls3 = Class.forName("com.itheima.GServlet");
+        System.out.println(cls3);
+        System.out.println(cls3.getName());
+    }
+}
+#+end_src
+如果此时使用程序不存在，会出现 ~java.lang.ClassNotFoundException~ 。
+
+* Java Lambda 表达式
+** 基本使用
+从 JDK1.8 开始为了简化使用着进行代码的开发，专门提供了有 Lambda表达式是的支持，利用函数式的变成可以省略一部分面向对象的麻烦（Python 使用函数式变成可以代替工厂模式。
+面向对象在长期发展的过程之中，有些反对者认为面向对象的设计过于复杂。
+#+begin_src java
+interface IPerson {
+    public void send(String str);
+}
+public class Main {
+    public static void main(String[] args) {
+        System.out.println("Lambda 表达式");
+        IPerson person = new IPerson() {
+            @Override
+            public void send(String str) {
+                System.out.println("「发送消息」" + str);
+            }
+        };
+        person.send("我好帅");
+    }
+}
+#+end_src
+如上面代码所显示一样，为了实现一行代码的输出，写了一堆，使用 Lambda 表达式来实现。
+#+begin_src java
+interface IPerson {
+    public void send(String str);
+}
+public class Main {
+    public static void main(String[] args) {
+        System.out.println("Lambda 表达式");
+        IPerson person = (str)->{
+            System.out.println("「发送消息」" + str);
+        };
+        person.send("我好帅");
+    }
+}
+
+#+end_src
+实现了同样的效果，编写的代码量确少了很多。
+** 使用要求
+Lambda 表达式如果想要使用，那么必须有一个重要的实现要求：SAM(Single Abstarct Method)，只有一个抽象方法。在上述接口 IPerson 中，只提供了一个抽象方法 ~send()~ ，没有其他方法定义，这样的接口被称为 *函数式接口* ，只有 *函数式接口* 才能使用 Lambda 表达式。
+#+begin_quote
+为了明确的表示，这是函数式接口，加入 @FunctionalInterface ，表示这是一个明确的函数式接口，接口中只能有一个方法。
+#+end_quote
+1. *但是如果是接口中定义了 defalut 方法是不影响的* 。
+2. Lambda 表达式的格式
+    #+begin_src java
+    // 方法没有参数： ()->{}
+    // 方法有参数： (argument, argument)->{}
+    // 如果只有一行语句返回： (argument, argument)-> statement
+    interface IPerson {
+        public void send(String str);
+    }
+    interface IMath {
+        public int add(int x, int y);
+    }
+    public class Main {
+        public static void main(String[] args) {
+            System.out.println("Lambda 表达式");
+            IPerson person = (str) -> {
+                System.out.println("「发送消息」" + str);
+            };
+            person.send("我好帅");
+            IMath iMath = Integer::sum;
+            System.out.println(iMath.add(1, 2));
+        }
+    }
+    #+end_src
+3. 利用 Lambda 表达式确实比较方便的简化了代码的实现。（匿名内部类还是挺好的，在多方法的接口中无法使用 Lambda 进行描述）。
+
+** 方法引用
+引用数据类型最大的特点是可以进行内存的指向处理，在传统的开发之中一直是对象的引用操作，从 JDK1.8 之后也提供了方法的引用，方法的引用在 Java 中有四种方式。
+1. 引用静态方法: ~类名称::static 方法名称~ (~System.out::println)~.
+   #+begin_src java
+@FunctionalInterface
+interface IFunction<P, R> {
+    public R change(P p);
+}
+
+public class Basic {
+    public static void main(String[] args) {
+        System.out.println("方法引用");
+        IFunction<Integer, String> function = String :: valueOf;
+        String str = function.change(100);
+        System.out.println(str.length());
+    }
+}
+// 上述代码就是第一种方法引用，引用只有一个要求： *可以实现方法名称的定义* ，可以为一个函数定义多个名字，但是必须是函数式接口。
+   #+end_src
+2. 引用某个实例化对象的方法： ~实例化对象::普通方法~.
+   #+begin_src java
+@FunctionalInterface
+interface IFunction<R> {
+    public R upper();
+}
+public class Basic {
+    public static void main(String[] args) {
+        System.out.println("方法引用");
+        IFunction<String> function = "www.sayno.work" :: toUpperCase;
+        String str = function.upper();
+        System.out.println(str);
+    }
+}
+   #+end_src
+3. 应用特定类型的方法： ~特定类::普通方法~.
+   #+begin_src java
+@FunctionalInterface
+interface IFunction<R> {
+    public int compare(R r1, R r2);
+}
+public class Basic {
+    public static void main(String[] args) {
+        System.out.println("方法引用");
+        IFunction<String> function = String :: compareTo;
+        System.out.println(function.compare("A", "a"));
+    }
+}
+   #+end_src
+4. 引用构造方法： ~类名称::new~.
+   #+begin_src java
+public class Basic {
+    public static void main(String[] args) {
+        System.out.println("方法引用");
+        IFunction<Person> iFunction = Person::new;
+        Person person = iFunction.create("周国良", 20);
+        System.out.println(person.getName() + person.getAge());
+    }
+}
+@FunctionalInterface
+interface IFunction<R> {
+    public R create(String s, int a);
+}
+class Person {
+    private String name;
+    private int age;
+    public Person(){}
+    public Person(String name, int age){
+        this.setName(name);
+        this.setAge(age);
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+}
+
+   #+end_src
+5. 方法引用最大的又是只是弥补了对于引用的支持功能，传统只有对象引用。
+
+** 内建函数式接口
+自己开发函数式接口，需要大量的 ~@FunctionalInterface~ 来声明，可以使用系统的， ~java.util.function~ 直接使用函数式接口，有几个核心的函数式接口
+*** 功能型函数接口
+功能型函数接口的定义([[https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/function/Function.html][Function-doc]])，接收一个，返回一个，同类型还有很多，这个只是一个基础形式的接口，如 ~DoubleFunction<R>~ ，不过本质相同
+#+begin_src java
+@FunctionalInterface
+public interface Function<T,R>{
+    R apply(T t);
+}
+#+end_src
+案例如下
+#+begin_src java
+import java.util.function.Function;
+
+public class Basic {
+    public static void main(String[] args) {
+        System.out.println("方法引用");
+        Function<String, Boolean> function= "sayno.work" :: startsWith;
+        System.out.println(function.apply("sayno"));
+    }
+}
+#+end_src
+*** 消费型函数接口
+只能进行数据的操作，没有数据的返回
+#+begin_src java
+@FunctionalInterface
+public interface Consumer<T>{
+    void accept(T t);
+}
+#+end_src
+案例如下
+#+begin_src java
+import java.util.function.Consumer;
+
+public class Basic {
+    public static void main(String[] args) {
+        System.out.println("方法引用");
+        Consumer<String> consumer = System.out :: println;
+        consumer.accept("www.sayno.work");
+    }
+}
+#+end_src
+今天学习的时候(<2022-05-03 Tue>)，还一直在想，看完 Lambda 之后，看看啥是 Consumer 接口，因为在 List 碰到了，他的 ~forEach()~ 方法接收的就是一个 ~Consumer~ 类型的。
+#+begin_src java
+import java.util.ArrayList;
+import java.util.List;
+
+public class Basic {
+    public static void main(String[] args) {
+        List<Integer> list = new ArrayList<>();
+        list.add(100);
+        list.add(200);
+        list.forEach(System.out::println);
+    }
+}
+
+#+end_src
+*** 供给型函数接口
+没有数据的接收，有数据的返回
+#+begin_src java
+@FunctionalInterface
+public interface Supplier<T>{
+    T get();
+}
+#+end_src
+案例如下
+#+begin_src java
+import java.util.function.Supplier;
+
+public class Basic {
+    public static void main(String[] args) {
+        Supplier<String> supplier = "WWW.SAyno.Work":: toLowerCase;
+        System.out.println(supplier.get());
+    }
+}
+#+end_src
+*** 断言型函数接口
+进行判断处理
+#+begin_src java
+@FunctionalInterface
+public interface Predicate<T>{
+    boolean test(T t);
+}
+#+end_src
+案例如下
+#+begin_src java
+package work.sayno.www;
+import java.util.function.Predicate;
+
+public class Basic {
+    public static void main(String[] args) {
+        Predicate<String> predicate = "SaYNo" :: equalsIgnoreCase;
+        System.out.println(predicate.test("sayno"));
+    }
+}
+#+end_src
+*** 小结
+在以后的开发中，如果提供的函数接口足够我们使用，没有就需要自己定义，较为的麻烦。

@@ -37,4 +37,12 @@ sudo systemctl start mysql
 6. The most important step is open the 3306 port on your console.(Tengxunyun or Aliyun).
 7. Finally, you can use command login remotely: ~mysql -u mysqluser -h <your-IP> -p~
 ** FTP
-Hold it for a while, update when you have time.:-)
+Hold it for a while, update when you have time.:-)<2022-05-03 Tue>
+Today, I will write down how to build FTP server in my lighthouse.
+1. ~sudo apt install vsftpd~ install FTP server.
+2. ~sudo systemctl {enable, start} vsftpd~ set vsftpd start now and start automatically when you login.
+3. ~sudo netstat -antup | grep ftp~ to know if FTP server is running.
+4. ~sudo useradd ftpuser~ create new user for login.
+5. ~sudo passwd ftpuser~ set password for new user.
+6. Then, choose the directory as the default directory when you login successfully, to me, I set the ~$HOME~ as the default directory.
+7. ~sudo vim /etc/vsftpd/vsftpd.conf~ configure FTP server.

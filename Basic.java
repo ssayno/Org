@@ -1,12 +1,9 @@
+import java.util.function.Consumer;
+
 public class Basic {
     public static void main(String[] args) {
-        print();
-        print("大帅哥");
-    }
-    public static void print(){
-        System.out.println("Hello, IDEA");
-    }
-    public static void print(String  name){
-        System.out.println("Hello, " + name);
+        System.out.println("方法引用");
+        Consumer<String> consumer = System.out :: println;
+        consumer.accept("www.sayno.work");
     }
 }

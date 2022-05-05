@@ -1,39 +1,321 @@
 #+TITLE: Shell
 #+DATE: [2021-11-26 Fri 19:55]
+#+STARTUP: overview
 * Preface
-  这篇博客用来记录重新学习 shell 的随笔，不系统，只是自己以前没有注意的。
-#+begin_src shell
-echo "怎么变颜色了"
+** Wildcards and Regex <<W-A-R>>
+There are different.
+1. [[https://stackoverflow.com/questions/29372499/wildcard-in-regular-expression-in-shell-script]]
+2. [[https://tldp.org/LDP/GNU-Linux-Tools-Summary/html/x11655.htm]]
+** SheBang
+On Linxu system, ~shebang~ is the character sequence consisting of the characters number sign and exclamation mark (~#!~) at the beginning of a script.(Reference [[https://en.wikipedia.org/wiki/Shebang_(Unix)][shebang]]).
+** Others
+1. Use ASCII in shell script.
+2. Write comment for yourself.
+3. ~chmod +x script~
+4. In shell, all variable can be used directly, don't need declare type for them. Shell is a weakly typed language.([[https://en.wikipedia.org/wiki/Strong_and_weak_typing][weakly and strongly language]]).
+5. The default type of shell variable is string.
+6. *No matter what language you learn, learn to use the strengths of that language*.
+** history relative variable
+1. ~HISTSIZE~ storage the size of ~history~ command.
+   1. In zsh, it's 50000.
+   2. In bash, it's 500.
+2. ~HISTFILE~ storage the name of ~history~ file.
+3. ~history -c~ clear the history command, but it also storage in ~HISTFILE~.
+4. ~history -r~ recovery the history command.
+5. ~!!~ previous command.
+** Variable in shell
+*** scope of variable
+1. Environment variable, like ~PATH~, it can be used in all shell and its child process, in general, it add ~export~ before the variable, like ~export DWM=/usr/bin/dwm~. You can create Environment variable in CLI, but when you logout, it will disappear. If you want to create permanently. you can add it in following file
+   a) User configuration file ~~/.bash_profile~ and ~~/.bashrc~.(*Every user have it own User configuration file.*)
+   b) Global configuration file ~/etc/profile~ and ~/etc/bashrc~.(*If these file is modified, it can affect all users.*)
+   c) *When you login in a system, configuration files have load order, ~/etc/profile -> /etc/profile.d/* -> $HOME/.bash_profile -> $HOME/.bashrc -> /etc/bashrc~.*
+2. Local variable, in this process.
+3. Scope variable, in a script or function.
+4. ~pstree~ this is a useful command.
+*** echo variable
+1. ~set~ echo all variable, including global variable and local variable.
+2. ~env~ global variable.
+3. ~declare~ work like ~set~.
+4. ~export~ echo or set Environment variable.
+5. You can use ~readonly~ to declare the readonly variable, it can't be ~unset~, it will disappear when the process exit.
+6. Using ~unset~ to delete the variable.
+7. *When you declare a variable, you can't add space before or after the symbol ~=~.*
+8. Child process parent can't use parent process variable, parent is also.
+** Parent and child shell
+*** Single quote and Double quote
+1. Single quote can't distinguish special symbol.
+2. Double quote can distinguish special symbol.
+    #+begin_src shell
+    #!/bin/bash
+    age=19
+    echo '$age'
+    echo "$age"
+    #+end_src
+*** parent and child shell
+1. When you login the system, you open a shell process.
+2. When you use ~bash~ to execute the shell script, it will load a new child process, when the script finished, the child process exit, so the variable in this script can't be storage.
+3. You can use ~source~ or ~.~ to execute script in current shell, then variables in thsi script can be storage.(About the ~source~ and ~.~, you can reference [[https://www.gnu.org/savannah-checkouts/gnu/bash/manual/bash.html#Bourne-Shell-Builtins][orgin page]])
+4. You can use ~pstree~ to see the process tree.
+** Specical variable
+*** Special argument variables
+1. ~$0~ current script filename.(If you use it in CLI, return value is shell name, like ~bash~, ~zsh~)
+2. ~$n~ command line argument, n between 1 and 9, if n greater than 9, you should write it like ~${10}~.
+3. ~$#~ number of command line argument.
+4. ~$*~ get all command line argument, if not surrond with double quote, it works like ~"$1" "$2" ...~, otherwise, it works like ~"$1 $2 $3 ..."~.
+5. ~$@~ get all command line argument,  if not surrond with double quote, it works like ~"$1" "$2" ...~, otherwise, it works like ~"$1" "$2" "$3"~.
+    #+begin_src shell
+    #!/bin/zsh
+    echo "Test child process"
+    # pstree
+    echo "Filename is $0"
+    echo "Number of command line argument:$#"
+    echo 'Output of "$*"'
+    for i in "$*"; do
+            echo $i
+    done
+    echo 'Output of "$@"'
+    for i in "$@"; do
+            echo $i
+    done
+    echo 'Output of $*'
+    for i in $*; do
+            echo $i
+    done
+    echo 'Output of $@'
+    for i in $@; do
+            echo $i
+    done
+    #+end_src
+    Paste these code into a file called =test.sh= on current directory, then execute it with command ~bash test.sh 1 2 3 4 5 6 8~, you will know the difference between them.
+*** Special status variables
+1. ~$-~ if return value have ~i~, it means it is interactive.
+   #+begin_src shell
+#!/bin/zsh
+# This script is used to judge if you login is interactive.
+if [[ $- =~ "i" ]]; then
+        echo "Login interactive"
+else
+        echo "Login nointeractive"
+fi
+   #+end_src
+2. ~$$~ The process ID of the current shell. For shell scripts, this is the process ID under which they are executing.
+3. ~$?~ The exit status of the last command executed.
+4. ~$!~ The process ID of the last background command.
+   #+begin_src shell
+awk 'BEGIN{print "test"}'
+echo $!
 #+end_src
+5. ~$_~ The last argument of the previous command.
+   #+begin_src shell
+ls -l > /dev/null
+echo "$_"
+   #+end_src
+** Basic built-in command
+1. ~echo~
+   1. ~-n~ no line break(default is line break)
+   2. ~-e~ parse escape symbol, like ~\n, \r, \033[32m~.
+2. ~printf~ format is ~printf  format-string  [arguments...]~, it works like printf command in C, but it don't need parenthese and comma to separate the arguemnts.
+   #+begin_src shell
+printf "%-30s-%5d" "I am handsome" 40
+   #+end_src
+3. ~eval~
+4. ~exec~
+5. ~export~
+6. ~read~
+** String in shell
+1. Index in shell string from 0 to length of string.
+2. ~${#variable}~ return length of the the variable.
+   #+begin_src shell
+name="sayno"
+echo "Length of name is ${#name}"
+   #+end_src
+3. ~${variable:start}~ return the substring from index ~start~
+   #+begin_src shell
+url="www.sayno.work"
+echo "${url:0}"
+  #+end_src
+4. ~${variable:start:length}~ return the substring from index ~start~ with length of ~length~
+   #+begin_src shell
+url="www.sayno.work"
+echo "${url:4:5}"
+   #+end_src
+5. *Following command, use wildcards not regex, you can read [[W-A-R][Wildcards-and-Regex]], and not change the original value*
+6. ~${variable#word}~ delete the shortest string match ~word~ at start.
+7. ~${variable##word}~ delete the longest string match ~word~ at start.
+   #+begin_src shell
+table=a,b,c,d,e
+echo "${table#?,}"
+echo "${table##?,}"
+echo "$table"
+   #+end_src
 
-#+RESULTS:
-: 怎么变颜色了
-
-
+8. ~${variable%word}~ delete the shortest string match ~word~ at the end of ~variable~.
+9. ~${variable%%word}~ delete the longest string match ~word~ at the end of ~variable~.
+   #+begin_src shell
+table=a.b.c.d.e
+echo "${table%.*}"
+echo "${table%%.*}"
+   #+end_src
+10. ~${variable/pattern/string}~ use ~string~ to replace first substring match ~pattern~.
+11. ~${variable//pattern/string}~ use ~string~ to replave all substring match ~pattern~.
+    #+begin_src shell
+myname="www.sayno.work"
+echo "${myname/work/com}"
+    #+end_src
+12. ~${parameter:-word}~ If value of ~parameter~ if null, then return ~word~.
+13. ~${parameter:=word}~ If value of ~parameter~ if null, then set ~word~ to ~parameter~, and return ~word~.
+14. ~~
+*** Example
 #+begin_src shell
-#!/usr/bin/env bash
-for i in py c tex org class sh
-do
-	touch main".${i}"
+for i in {1..100}; do
+    touch $i".txt"
 done
-# 使用正则表达式，删除除了 org 其他的东西
-rm -f main*[^org]				# 实际是 字母 o r g 都不删除
+for file in *; do
+    prefix=${file%.*}
+    mv $file $prefix".tex"
+done
+rm -f *.txt *.tex
 #+end_src
-g** shell 中贪婪和非贪婪匹配
-1. shell 中使用 =%= 进行非贪婪匹配，从右到左，删除 VALUE 字符串中以分隔符“.”匹配的右边字符，保留左边字符。
-2. shell 中使用 =%%= 进行贪婪匹配，从右到左，同上
-3. shell 中使用 =#= 进行非贪婪匹配，从左到右的进行匹配，类上
-4. shell 中使用 =##= 进行贪婪匹配，从左到右的进行匹配，类上
 #+begin_src shell
-v=www.baidu.com.cn
-echo ${v%.*}
-echo ${v%%.*}
-echo ${v#*.}
-echo ${v##*.}
+for i in {1..100}; do
+    touch change_"$i"_finished.jpg
+done
+for jpg in *.jpg; do
+    dest=${jpg/_finished/}
+    mv $jpg $dest
+done
+#+end_src
+** Built-in and external commands
+*** Built-in commands
+Commands which are built into the shell. For all the shell built-in commands, execution of the same is fast in the sense that the shell doesn’t have to search the given path for them in the PATH variable, and also no process needs to be spawned for executing it.
+*** external commands
+ Commands which aren’t built into the shell. When an external command has to be executed, the shell looks for its path given in the PATH variable, and also *a new process has to be spawned and the command gets executed*. They are usually located in /bin or /usr/bin. For example, when you execute the “cat” command, which usually is at /usr/bin, the executable /usr/bin/cat gets executed.
+*** Others
+Reference this [[https://www.geeksforgeeks.org/internal-and-external-commands-in-linux/][page]]. You can use ~type~ command to see which command is.
+#+begin_src shell :results verbatim
+type cd
+type let
+type awk
+#+end_src
+For example, if you use external command like ~awk~.
+[[./shell.png]]
+*You can use command ~compgen -b~ see all built-in commands*
+** time
+#+begin_src shell
+#!/bin/bash
+time for i in {1..100}; do
+    seq=$seq"$i"
+done
+echo ${#seq}
+#+end_src
+** Numerical operations in Shell
+*** Double parenthese
+| command and operations | Meanings                                      |
+|------------------------+-----------------------------------------------|
+| ~(())~                 | Use for integer, built-in, high efficiency    |
+| ~let~                  | Use for integer, like ~(())~                  |
+| ~expr~                 | Can be used for integer, and more functions   |
+| ~bc~                   | Can be used for integer and float             |
+| ~$[]~                  | Use for integer                               |
+| ~declare~              | ~-i~ option can let variable to join caculate |
+*** ~(())~
+If you want to get the result of ~(())~, you should add ~$~ before it, and you don't need add ~$~ before variable, it's unlike when shell use variable. All operation like C language.
+#+begin_src shell :results verbatim
+i=1
+j=$((i++))
+z=$((++i))
+((k=i**4))
+echo $i,$j,$z,$k
+echo $((1/3))
+echo $((1%3))
+#+end_src
+*** ~let~
+~let~ command works like ~(())~.
+#+begin_src shell :results verbatim
+num=1
+let num++
+echo $num
+let new_num=num ** 2
+echo ${new_num}
+#+end_src
+*** ~expr~
+This command have so many operations, you can use ~man expr~ to see them.
+*** ~$[]~
+#+begin_src shell
+num=1
+age=$[num+2]
+$[age2=num+200]
+echo $num,$age,$age2
 #+end_src
 
 #+RESULTS:
-| www.baidu.com |
-| www           |
-| baidu.com.cn  |
-| cn            |
+| 1 | 3 | 201 |
+
+** xargs
+
+** Conditionnal test
+Four format.
+1. ~test expression~ =test= is a built-in command. *If test pass, return 0, otherwise return value is't 0.* <<test>>
+   a. ~-a~ works like ~&&~
+   b. ~-o~ works like ~||~
+   c. ~!~
+2. ~[ expression ]~ note that it must have a space before the ~]~ and after the ~[~.<<sb>>
+   #+begin_src shell
+# normal usage
+[-z "$filename"] && touch $filename
+   #+end_src
+3. ~[[ expression ]]~ note that it must have a space before the ~]~ and after the ~[~.<<db>>
+   #+begin_src shell
+echo -e "For me, always use this conditional test in \033[32mif\033[0m command"
+if [[ -n "$filename" ]]; then
+    touch $filename
+fi
+   #+end_src
+4. ~((expression))~ don't need a space before the ~]~ and after the ~[~.<<dp>>
+
+** Numerical value compare
+1. ~-eq~ equal
+2. ~-ne~ not equal
+3. ~-gt~ greater than
+4. ~-ge~ greater euqal
+5. ~-lt~ less than
+6. ~-le~ less euqal
+** String value compare
+1. ~=~ equal(String)
+   #+begin_src shell
+if [[ "a" = "a" ]]; then
+    echo "equal"
+fi
+   #+end_src
+2. ~!=~ not euqal(String)
+   #+begin_src shell
+if [[ "a" != "A" ]]; then
+    echo "Not equal"
+else
+    echo "Equal"
+fi
+   #+end_src
+3. ~-n~ if variable is not null, then return true(0), else false(no-0)
+   #+begin_src shell
+name=""
+if [[ -n "$name" ]]; then
+    echo "It isn't null"
+else
+    echo "It's null"
+fi
+   #+end_src
+
+   #+RESULTS:
+   : It's null
+4. ~-z~ if variable is null, return true(0), oppsite of ~-z~
+   #+begin_src shell
+name=""
+if [[ -n "$name" ]]; then
+    echo "It isn't null"
+else
+    echo "It's null"
+fi
+   #+end_src
+** Boolean value operation
+1. Use ~&&~, ~||~, and ~!~ in ~[[ expression ]]~ ([[db][Double brackets]]) and ~(())~ ([[dp][Double Parenthese]]).
+2. Use ~-a~, ~-o~, and ~!~ in ~[]~ ([[sb][Single bracket]]) and ~test~ ([[test][test]])

@@ -1,8 +1,174 @@
+#+BLOG: myblog
+#+POSTID: 159
+#+DATE: [2022-05-01 Sun 12:07]
 #+TITLE: Servlet
+#+CATEGORY: Java Web
 * Preface
 Servlet 是 Java Web 的三大组件之一（Filter、Listener），它属于动态资源。 Servlet 的作用处理请求，服务器会把接收到的请求交给 Servlet 来处理。
+客
+* Servlet
+** Servlet 的作用
+1. 接收请求数据
+2. 处理请求
+3. 完成响应
+例如客户端发出登陆请求，或者输出注册请求，这些请求都应该由 Servlet 来完成处理， Servlet 由我们编写，由 Tomcat 调用
 客户端发出登录请求，或者输出注册请求，这些请求都应该由 Servlet 来完成处理！ Servlet 需要我们自己来编写，每个 Servlet 必须实现 javax.serlet.Serlet 接口。
-* 实现 Servlet 的三种方式
+** 实现 Servlet 的三种方式
 1. 实现 javax.servlet.Servlet 接口
-2. 继承 javax.servlet.GenericServlet 类
-3. 继承 javax.servlet.HttpServlet 类（推荐
+2. 继承 javax.servlet.GenericServlet 类（Generic 通用的
+3. 继承 javax.servlet.HttpServlet 类（推荐，HttpServlet 继承自 GenericServlet 抽象类
+每个 Servlet 的都是唯一的，他们能处理的请求是不同的，实际上我们都是调用 HttpServlet，就像我们都是用 ~ArrayList~ 来实现 ~List~ 接口，
+** Servlet 五大方法
+*** 三大生命周期方法
+生命周期方法：由 Tomcat 自动调用
+1. ~public void init(ServletConfig servletConfig) throws ServletException {}~ 在 Servlet 对象创建之后立马执行，之执行一次
+2. ~public void service(ServletRequest servletRequest, ServletResponse servletResponse) throws ServletException, IOException~ 会被调用多次，每次处理请求都是调用这个方法
+3. ~public void destroy() {}~ 在 Servlet 对象销毁之前调用，只调用一次
+*** 其他两个方法
+1. ~public ServletConfig getServletConfig() {}~ 获取 Servlet 的配置信息
+2. ~public String getServletInfo() {}~ 获取 Servlet 的信息（基本上用不上
+*** ServletConfig: getServletConfig() 函数的返回值
+ServletConfig 其实是一个接口 ~interface ServletConfig~ ，本质上是一个接口，解析的是 ~web.xml~ 的内容
+#+begin_src java
+import java.util.Enumeration;
+
+public interface ServletConfig {
+    String getServletName(); // 获取 <servlet-name></serlet-name> 的内容
+
+    ServletContext getServletContext(); // 获取上下文
+
+    String getInitParameter(String var1); // 给定 <param-name> 获取 <param-value>
+
+    Enumeration getInitParameterNames(); // 获取所有的 <param-name>
+}
+<servlet>
+    <servlet-name>wo</servlet-name>
+    <!-- servlet 的实现类的位置-->
+    <servlet-class>com.itheima.AServlet</servlet-class>
+    <init-param>
+        <param-name>namespace</param-name>
+        <param-value>name-value</param-value>
+    </init-param>
+</servlet>
+<servlet-mapping>
+    <servlet-name>wo</servlet-name>
+    <url-pattern>/AServlet</url-pattern>
+</servlet-mapping>
+#+end_src
+*** ServletRequest, ServletRespones
+**** ServletRequest
+获得请求数据、处理请求、对客户端进行相应，所有的数据都被 Config 分装到 ServletRequest 中，调用即可获得请求信息。
+**** ServletResponse
+调用他的方法才能设置响应头和状态码，甚至可以用它发送 HTML 代码，这个时候请求被发送到浏览器，浏览器才能打开。
+** 如何让浏览器访问 Servlet
+1. 给 Servlet 指定一个 Servlet 路径
+2. 浏览器访问 Servlet 路径
+3. 在 ~web.xml~ 进行相关配置
+#+begin_src xml
+<servlet>
+    <servlet-name>wo</servlet-name>
+    <!-- servlet 的实现类的位置-->
+    <servlet-class>com.itheima.AServlet</servlet-class>
+    <init-param>
+        <param-name>namespace</param-name>
+        <param-value>name-value</param-value>
+    </init-param>
+</servlet>
+<servlet-mapping>
+    <servlet-name>wo</servlet-name>
+    <url-pattern>/AServlet</url-pattern>
+</servlet-mapping>
+#+end_src
+然后在 IDEA 中配置使用 tomcat
+1. 一个类只有一个对象，当然可能存在多个 Servlet 类
+2. 线程不安全，所以效率非常的高
+3. Servlet 类由我们写，但是对象由服务器创建，并且由服务器来调用相应的方法。
+
+* GenericServlet
+查看源码更加的清楚的了解，其实就是对于 Servlet 的 一些封装以及新加了一些常用的封装方法。
+其中比较有意思的是，在 ~init(ServletConfig servletConfig)~ 方法中使用 ~this.config=servletConfig~ 和 ~this.init()~ 来保留配置，方便后面使用，为了覆写错了，加了一个 ~init()~ 函数
+* HttpServlet
+了解 Servlet 之后，了解子类可以看看源码，就比较好理解了，需要我们覆写的是 ~doGet()~ 或者 ~doPost()~ 等方法，
+* Servlet 细节<<Servlet-details>>
+1. 一个 Servlet 类型只能有一个实例化对象，所以有可能一个 Servlet 对象处理多个请求，那么这就是线程不安全的，有解决办法
+   1) 不要在 Servlet 中创建成员， *创建局部变量即可*
+   2) 可以创建 *无状态成员* （一次操作，不保存数据 ~private User user = new User();~
+   3) 创建有状态成员，状态必须为只读。
+2. 让服务器在启动时完成创建，在 ~<servlet></servlet>~ 标签中添加标签 ~<load-on-startup>0</load-on-startup>~ 设置创建时间（按照给个 Servlet 设置的时间来排序
+3. ~web.xml~ 中的 ~<url-pattern></url-pattern>~ ，而且一个 ~servlet-mapping~ 标签可以设置多个 ~url-pattern~ 标签，也就是说可以通过多个 URL 来访问 Servlet。
+4. 可以使用通配符号 ~*~
+   a. 通配符要么为前缀，要么为后缀
+   b. 不能出现在中间位置，也不能只有通配符
+   c. 一个 URL 最多出现一个通配符 ~*~ （其实正常人都不会乱写的
+* ServletContext
+一个项目只有一个 ServletContext 对象，（application），使用它可以给多个 Servlet 传递数据
+** 概述
+服务器为每一个应用创建一个 ServletContext 对象
+1. ServletContext 对象的创建在服务器启动时完成
+2. ServletContext 对象的销毁在服务器关闭时完成
+3. ServletContext 对象的作用是在整个 Web 应用的动态资源之间共享数据，例如在 AServlet 中用 ServletContext 保存数据，那么就可以在 BServlet 中调用数据。
+4. 通过 ~ServletConfig~ 对象的 ~getServletContext()~ 方法获取（源
+** 域对象的功能
+可以在不同的 Servlet 中进行数据传递的对象就称为域对象。 Java 四大域对
+1. PageContext
+2. ServletRequest
+3. HttpSession
+4. ServletContext
+所有的域对象都有存取数据的功能，因为域对象内部有一个 Map,用来存取数据。
+** ServletContext 对象用来操作数据的方法
+1. ~void setAttritube(String name, Object value)~ 用来存储一个对象，域名为 name, 域值为 value.
+2. ~Object getAttritube(String name)~ 用来获取 ServletContext 中的数据。
+3. ~void removeAttribute(String name)~ 删除对应的域名和域值。
+4. ~Enumeration getAttributeName()~ 获取所有域属性的名称。
+** ServletContext 获取初始化参数
+Servlet 对象也可以获取初始化参数，但是只能获取自己相关的信息（局部信息），ServletContxt 是全局，所以可以访问所有 Servlet 对象的初始化参数。 *获取所有公共的初始化参数一起使用*
+#+begin_src xml
+<context-param>
+    <param-name>province</param-name>
+    <param-value>湖南</param-value>
+</context-param>
+#+end_src
+~getInitParameter()~ 方法即可获取。
+** ServletContext 获取资源路径
+完成平时，访问网站的次数，和访问人数的实现。
+#+begin_src java
+List<String> lists = new ArrayList<>();
+@Override
+protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    ServletContext application = this.getServletContext();
+    System.out.println(application.getAttribute("province"));
+    System.out.println(application.getInitParameter("province"));
+    String path = application.getRealPath("/index.jsp");
+    System.out.println(path);
+    Integer count = (Integer) application.getAttribute("count");
+    Integer real_count = (Integer) application.getAttribute("real_count");
+    if (!lists.contains(req.getRemoteAddr())){
+        if (real_count == null){
+            application.setAttribute("real_count", 1);
+        }else{
+            application.setAttribute("real_count", real_count+1);
+        }
+
+        lists.add(req.getRemoteAddr());
+    }
+    application.setAttribute("IP", lists);
+    if (count == null){
+        application.setAttribute("count", 1);
+    }else{
+        application.setAttribute("count", count+1);
+    }
+    PrintWriter pw = resp.getWriter();
+    pw.print("<h1>" + count + "</h1>");
+    pw.print("</br></hr>");
+    pw.print("<h1>" + real_count + "</h1>");
+    pw.print(application.getAttribute("IP"));
+}
+#+end_src
+
+* Tips
+1. 使用多个 Servlet 就是在 ~web.xml~ 文件中编写多个 ~<servlet></servlet>~ 和 ~<servlet-mapping></servlet-mapping>~
+
+* Picture
+[[./servlet.png]]
+查看 Servlet 的细节使用 [[Servlet-details][Servlet details]]
+# ./servlet.png http://www.sayno.work/wp-content/uploads/2022/05/servlet.png

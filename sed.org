@@ -139,3 +139,6 @@ sed -i '/abc/s/ab/cd/g'
   </tr>
 </table>
 #+end_export
+
+** Tips
+1. If anaddress is followed by an exclamation mark(!), the command is applied to all lines that *do not* match the address.

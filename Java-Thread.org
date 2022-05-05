@@ -1,0 +1,587 @@
+#+BLOG: myblog
+#+POSTID: 170
+#+DATE: [2022-05-02 Mon 20:37]
+#+TITLE: Java Thread
+#+CATEGORY: Java
+#+STARTUP: overview
+* Preface
+Java 线程是比较难学的，Java 语言最大的特点是支持多线程的开发（为数不多支持线程的语言，Python 是假线程）。
+* 进程、线程、协程
+1. [[https://www.cnblogs.com/Survivalist/p/11527949.html#%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6][博客园-解析]]
+2. [[https://juejin.cn/post/6975852498393235487][掘金-解析]]
+* 实现
+Java 之中实现多线程定义，需要有一个线程主体类进行线程方法的编写，这个主体类必须实现特定的接口或者特定的父类
+** 继承 Thread 类实现多线程
+多线程要执行的功能应该在 ~run()~ 方法定义， ~run()~ 不能够直接调用，而是使用 ~start()~ 方法调用（实际上调用的还是 ~run()~ 方法）。（ run 有序执行，start 无序执行
+1. 在 Java 程序执行过程中考虑到不同层次开发者的需求，所以支持本地的操作系统函数调用，这就是 JNI （Java Native Interface），但是不推荐使用， ~start()~ 方法中调用的 ~start0()~ 就是 JNI 技术。
+2. 多线程的启动，必须是 ~start()~ 方法。
+** 基于 Runnable 接口实现多接口
+Java 继承永远有单继承限制，如果需要继承其他类会比较麻烦，所以使用接口来实现比较方便。（整个接口只有一个 ~run()~ 方法）
+1. 由于不再继承 Thread 类，所以没有了 ~start()~ 方法。（但是没有 ~start()~ 方法无法开启线程
+2. Thread 类中提供接收 ~Runnable~ 接口的构造方法： ~public Thread(Runnable target)~
+3. 由于实现的是 Runnable 接口，没有了单继承的限制。
+4. 从 JDK1.8 开始，使用了函数接口定义。
+   #+begin_src java
+    for(int x=0;x<10;x++){
+        String title = "Thread-" + x;
+        Runnable run=()->{
+            int y=2;
+            System.out.println(title + "运行" + y);
+        };
+        new Thread(run).start();
+    }
+   #+end_src
+5. 以后的开发中，使用 Runnable 实现，再通过 Thread 类对象开启多线程。
+** Thread 与 Runnable 的关系
+1. ~public class Thread extends Object implements Runnable~ 可以知道 Thread 本身也是实现了 Runnable 接口。
+2. 多线程设计之中，使用了代理设计模式，用户自定义的线程主体类就是负责核心功能的实现，Thread 负责启动。
+3. 多线程开发的本质实质上是在于多个线程可以进行同一资源的抢占。
+** Callable 接口实现多线程
+从最传统的开发来说，多线程的实现最多依靠的是 Runnable,但是 Runnable 接口在执行完毕之后，无法返回接口，于是 Callable 产生。(~java.util.concurrent~ 中，JDK1.5 之后)
+~@FunctionalInterface public interface Callable<V>~ 可以设置一个泛型，该泛型的类型就是返回值的类型，Callable 只有一个方法 ~V call() throws Exception~ 。
+1. Callable 没有 ~start()~ 方法，无法启动线程。
+2. Callable 和 Thread 没有联系。
+3. FutureTask (~java.util.concurrent~)
+#+begin_src java
+import java.util.concurrent.Callable;
+import java.util.concurrent.FutureTask;
+class Third implements Callable<String> {
+    @Override
+    public String call() throws Exception {
+        for(int x=0;x<10;x++){
+            System.out.println("**** 线程执行 x = " +  x);
+        }
+        return "线程执行完毕";
+    }
+}
+
+public class Basic {
+    public static void main(String[] args) throws Exception{
+        FutureTask<String> task = new FutureTask<>(new Third());
+        new Thread(task).start();
+        System.out.println("线程返回数据" + task.get());
+    }
+}
+#+end_src
+
+#+RESULTS:
+#+begin_example
+,**** 线程执行 x = 0
+,**** 线程执行 x = 1
+,**** 线程执行 x = 2
+,**** 线程执行 x = 3
+,**** 线程执行 x = 4
+,**** 线程执行 x = 5
+,**** 线程执行 x = 6
+,**** 线程执行 x = 7
+,**** 线程执行 x = 8
+,**** 线程执行 x = 9
+线程返回数据线程执行完毕
+#+end_example
+** Callable 和 Runnable 的区别
+1. Runnable 在 JDK1.0 提出的多线程实现接口，而 Callable 是在 JDK1.5 之后出来的。
+2. java.lang.Runnable 接口之中只提供一个 run() 方法，并且没有返回值。
+3. java.util.concurrent.Callable 接口提供 call() 方法，可以有返回值。
+
+** 线程的运行状态
+多线程的开发都是一个模式，定义线程主体类，然后通过 Thread 类进行调用方法。
+1. 任何一个多线程对象都应该使用 Thread 进行封装，所以线程的启动都是 ~start()~ 方法，启动的时候，所有的多线程都是一种 *就绪状态，现在并没有执行* 。
+2. 进入到就绪状态之后，等待资源调度，当某一个线程调度成功之后则进入到运行状态（ ~run()~ 方法），不可能一直持续执行，中间会产生一些暂停的状态，例如，某个线程执行一段时间之后让出资源，此时，进入 *阻塞* 状态，随后重新回归到 *就绪状态* 。
+3. 当 ~run()~ 方法执行完毕之后，实际上该线程的人物已经结束，那么此时就是进入到 *停止状态* 。
+** 线程的命名和取得
+多线程的主要操作方法都在 Thread 类中定义，也就是学习 Thread 类中的方法。多线程的运行状态是不稳定的， *那么在程序开发之中，为了可以获取一些需要使用的线程，那么只能获取线程的名字来进行操作* 。 所以线程的名字至关重要。
+1. 构造方法： ~public Thread(Runnable target, String name)~
+2. 设置名字： ~public final void setName(String name)~
+3. 取得名字： ~public final String getName()~
+   #+begin_comment
+    对于线程对象的获取无法使用 ~this~ 关键字获得，线程不确定性，可以通过 Thread 的方法获取当前线程
+   #+end_comment
+4. 获得当前线程： ~public static Thread currentThread()~
+5. 当实例化线程对象的时候，如果给定了线程名字，就使用给定的名字，如果没给定，会自动生成类似的线程名字 ~Thread-0~ ，代码实例如下
+    #+begin_src java
+    class Second implements Runnable{
+        private String name;
+        public Second(){}
+        @Override
+        public void run() {
+            System.out.println(Thread.currentThread().getName() + "完毕");
+        }
+    }
+    public class Basic {
+        public static void main(String[] args) throws Exception{
+            new Thread(new Second(), "线程A").start();
+            new Thread(new Second()).start();
+            new Thread(new Second()).start();
+            new Thread(new Second(), "线程B").start();
+
+        }
+    }
+    #+end_src
+
+6. 每当使用 Java 命令的时候，就是启动了一个 JVM 进程，一台电脑可以启动多个 JVM 进程，每个 JVM 都有自己的主线程，一个主线程可以有多个子线程， *创建子线程的目的是可以将复杂或者耗时的交由子线程处理*
+
+** 线程的休眠
+需要某个线程暂缓执行一次，这就是休眠。
+1. ~public static void sleep(long millis) throws InterruptedException~ 毫秒
+2. ~public static void sleep(long millis, int nanos) throws InterruptedException~ 毫秒和纳秒，在进行休眠的时候可能会产生中断异常(InterrruptedException)，是 Exception 的子类，必须处理。
+    #+begin_src java
+    public class Basic {
+        public static void main(String[] args) throws Exception{
+            for(int x=0;x<10;x++){
+                String title = "Thread-" + x;
+                Runnable run=()->{
+                    for(int y=0;y<10;y++) {
+                        System.out.println(title + "运行" + y);
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                };
+                new Thread(run).start();
+            }
+        }
+    }
+    #+end_src
+从上面结构来看，所有的线程都是一块休眠，一块进行自动唤醒，实际上存在差别（所有线程同时进入线程的 ~run()~ 方法，有较小的差异，看不出来）。只是看起来一起执行，其实线程都是一个一个来。（线程的优先级别
+
+** 线程的中断
+在线程的休眠之中，我们了解到休眠可能会出现中断异常，也就是线程是可以被打断的， *而这种打断是由其他线程完成的* 。在 Thread 类有两个方法
+1. ~public boolean isInterrupted()~ 判断是否被打断。
+2. ~public void interrupt()~ 直接打断。
+    #+begin_src java
+public class Basic {
+    public static void main(String[] args) throws Exception{
+        Thread thread = new Thread(()->{
+            System.out.println("开始睡觉");
+            try {
+                Thread.sleep(10000);
+                System.out.println("睡完了");
+            } catch (InterruptedException e) {
+                // e.printStackTrace();
+                System.out.println("被纱布打扰睡觉了，没睡完");
+            }
+
+        });
+        thread.start();
+        Thread.sleep(1000);
+        if (!thread.isInterrupted()){
+            thread.interrupt();
+        }
+    }
+}
+    #+end_src
+3. 可以了解到 *所有正在执行的线程都是可以中断的，此时必须进行异常的处理* 。(上述代码中，由 main 函数抛出了异常。)
+** 线程的强制执行
+所谓的强制执行，指的是，当满足某写条件之后，某一个线程对象爱那个将可以一直独占资源，一直到线程的程序执行结束。
+1. Thread 类中的 ~join()~ 方法可以强制执行
+#+begin_src java
+public class Basic {
+    public static void main(String[] args) throws Exception{
+        Thread mainThread = Thread.currentThread();
+        Runnable run=()->{
+            for(int y=0;y<100;y++) {
+                if (y==3){
+                    System.out.println(y);
+                    try {
+                        mainThread.join();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                System.out.println(Thread.currentThread().getName() + "运行" + y);
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        };
+        new Thread(run, "次要线程").start();
+        for(int x=0;x<100;x++){
+            System.out.println(x);
+        }
+    }
+}
+
+#+end_src
+** 线程的礼让
+线程的礼让是指先将资源让出去，让别的线程使用。 ~public static void yield()~ （我不理解，为什么线程的礼让和线程的强制执行在我的电脑上面不起作用。
+** 线程的优先级别
+从理论上来讲，线程的优先级别越高越有可能先执行（越有可能先抢占到资源， *只是有可能，不是绝对性的优先执行* ）。在 Thread 类中有两个方法进行相应操作
+1. ~public final void setPriority(int newPriority)~ 设置线程优先级别
+    #+begin_quote
+public static final int MAX_PRIORITY = 10;
+
+public static final int NORM_PRIORITY = 5;
+
+public static final int MIN_PRIORITY = 1;
+    #+end_quote
+2. ~public final int getPriority()~ 获取线程优先级别。（测试了一下， ~main~ 线程和平常设计的线程都是 ~NORM_PRIORITY~ 。
+
+** 线程同步问题的提出
+在多线程的处理过程之中，可以利用 Runnable 描述多个线程操作的资源，而 Thread 描述每一个线程对象，于是当多个线程访问同一个资源的时候如果处理不当就是会出现数据的错误操作。这就引出了同步问题。
+#+begin_src java
+class Ticket implements Runnable{
+    private int tickets = 10;
+    @Override
+    public void run() {
+        while (true){
+            if(this.tickets > 0){
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                System.out.println(Thread.currentThread().getName() + "卖票" + this.tickets--);
+            }else{
+                System.out.println("票卖完了");
+                break;
+            }
+        }
+    }
+}
+public class Main {
+    public static void main(String[] args) {
+        System.out.println("同步问题代码");
+        Ticket ticket = new Ticket();
+        new Thread(ticket, "黄牛A").start();
+        new Thread(ticket, "黄牛B").start();
+        new Thread(ticket, "黄牛C").start();
+    }
+}
+#+end_src
+执行上面代码，很明显的可以看到，由于没有同步，三个线程同时启动，并不能准确的获取适时的票数(~Thread.sleep(1000)~)是为了模拟网络延迟，好看出来问题。
+** 线程同步
+想要解决上面的问题，那么就需要同步实时更新票数，解决同步问题的 *核心是锁* ，指的是当某一个线程执行操作的时候，其他线程在外面等待，无法调用资源。 Java 中如果想要实现这把锁，可以使用 ~synchronized~ 关键字来实现，利用这个关键字可以定义同步代码块或者同步方法，在同步方法或者同步代码块里面的代码只允许一个线程执行。
+~synchronized~ 关键字的基本语法
+#+begin_src java
+synchronized(同步对象){
+    同步代码操作
+}
+// 一般来说，采用当前对象 this 进行同步
+#+end_src
+下面是同步代码块的应用案例
+#+begin_src java
+class Ticket implements Runnable{
+    private int tickets = 100;
+    @Override
+    public void run() {
+        while (true){
+            synchronized(this){
+                if(this.tickets > 0){
+                    System.out.println(Thread.currentThread().getName() + "卖票" + this.tickets--);
+                }else{
+                    System.out.println("票卖完了");
+                    break;
+                }
+            }
+        }
+    }
+}
+public class Main {
+    public static void main(String[] args) {
+        System.out.println("同步问题代码");
+        Ticket ticket = new Ticket();
+        new Thread(ticket, "黄牛A").start();
+        new Thread(ticket, "黄牛B").start();
+        new Thread(ticket, "黄牛C").start();
+    }
+}
+#+end_src
+1. 可以比较清楚的看到，加入同步代码块之后，售票井然有序，合理的解决了公共资源的问题，但是也是存在这缺点， *加入同步处理之后，程序的整体性能降低了（同步会造成性能的降低）
+2. 利用同步方法解决：只需要在方法上定义 ~synchronzied~ 关键字就好了（ ~StringBuffer~ 就是这样）。
+#+begin_src java
+class Ticket implements Runnable{
+    private int tickets = 10;
+    public synchronized boolean sale(){
+        if (this.tickets > 0) {
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            System.out.println(Thread.currentThread().getName() + "卖票" + this.tickets--);
+            return true;
+        } else {
+            System.out.println("票卖完了");
+            return false;
+        }
+    }
+    @Override
+    public void run() {
+        while (this.sale()) {
+            System.out.println(Thread.currentThread().getName() + "卖了一张！");
+        }
+    }
+}
+public class Main {
+    public static void main(String[] args) {
+        System.out.println("同步问题代码");
+        Ticket ticket = new Ticket();
+        new Thread(ticket, "黄牛A").start();
+        new Thread(ticket, "黄牛B").start();
+        new Thread(ticket, "黄牛C").start();
+    }
+}
+#+end_src
+使用同步方法也是比较的方便，把需要同步的代码重新封装为一个方法，再在 ~run()~ 方法中跑。
+
+** 线程死锁
+线程的死锁指的是若干个线程彼此相互等待的状态，这是个在进行多线程同步之中可能产生的问题，死锁实际上是开发过程中出现的不确定的状态，有的时候代码如果处理不当则会不定期的出现思索，这是属于开发中的正常的调试问题（若干个线程访问同一个资源一定要进行同步处理，而过多的同步会造成死锁。
+
+* 案例
+** 生产者和消费者
+多线程开发过程之中，最为著名的案例就是消费者和生产者
+1. 生产者扶着信息内容的生产
+2. 每当生产者完成一项完整的信息之后消费者要从这里取走信息，
+3. 如果生产者没有生产那么消费者要等待生产完成；如果消费者没有对信息消费，则生产者需要等待消费完成之后再继续生产。
+** 基本实现
+可以定义为两个独立的线程类对象来进行操作。访问同一资源。
+*** 第一种情况
+访问的资源不进行同步
+*** 第二中情况<<Two>>
+访问的资源进行同步处理，数据不会乱，但是不是生产一个消费一个的模型。
+1. 生产者
+   #+begin_src java
+// 生产者
+public class Producer implements Runnable {
+    private Product product;
+
+    public Producer(Product product) {
+        this.product = product;
+    }
+
+    @Override
+    public void run() {
+        for (int i = 1; i <= 100; i++) {
+            if (i % 2 == 0) {
+                // System.out.println("even");
+                this.product.set("苹果", 10);
+            } else {
+                // System.out.println("odd");
+                this.product.set("菠萝", 5);
+            }
+        }
+    }
+}
+   #+end_src
+2. 消费者
+   #+begin_src java
+public class Consumer implements Runnable{
+    private Product product;
+
+    public Consumer(Product product) {
+        this.product = product;
+    }
+
+    @Override
+    public void run() {
+        for(int i=0;i<100;i++){
+            System.out.println(this.product.getContent());
+        }
+    }
+}
+   #+end_src
+3. 产品类<<Product>>
+    #+begin_src java
+// 产品
+public class Product {
+    private String name;
+    private int value;
+    public Product(){}
+    public Product(String name, int value){
+        this.setName(name);
+        this.setValue(value);
+    }
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getValue() {
+        return value;
+    }
+    public synchronized String getContent(){
+        try {
+            Thread.sleep(10);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return "产品为" + this.getName() + "，价值为" +this.getValue();
+    }
+    public synchronized void set(String name, int value){
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        this.setName(name);
+        this.setValue(value);
+    }
+    public void setValue(int value) {
+        this.value = value;
+    }
+}
+   #+end_src
+4. 主类->启动
+   #+begin_src java
+public class Main {
+    public static void main(String[] args) {
+        System.out.println("生产者和消费者模型");
+        Product product = new Product();
+        new Thread(new Producer(product)).start();
+        new Thread(new Consumer(product)).start();
+    }
+}
+   #+end_src
+*** 第三种情况
+线程的等待和唤醒机制，对于等待或者唤醒的机制，主要依靠的是 Object 类的方法处理的。
+**** 等待机制
+一般情况下， 都是设置 ~一直等~
+1. 一直等（没人唤醒就一直等）： ~public final void wait() throws InterruptedException~
+2. 设置等待时间（参数和 ~Thread.sleep()~ 一样）： ~public final void wait(long timeoutMillis, int nanos) throws InterruptedException~
+3. 设置等待时间： ~public final void wait(long timeoutMillis) throws InterruptedException~
+**** 唤醒机制
+1. 唤醒第一个等待线程： ~public final void notify()~
+2. 唤醒全部的等待线程（根据线程的优先级）： ~public final void notifyAll()~
+
+
+**** 完成完整的消费者和生产者模型
+将[[Two][第二种情况]]中的[[Product][产品类]]替换为如下的代码即可。
+#+begin_src java
+import java.util.Date;
+
+public class Product {
+    private String name;
+    private int value;
+    private boolean flag=true;
+    public Product(){}
+    public Product(String name, int value){
+        this.setName(name);
+        this.setValue(value);
+    }
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getValue() {
+        return value;
+    }
+    public synchronized String getContent() {
+        if(this.flag){
+            try {
+                super.wait();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        try {
+            Thread.sleep(10);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        try {
+            return "产品为" + this.getName() + "，价值为" +this.getValue();
+        } finally {
+            this.flag = true;
+            super.notify();
+        }
+    }
+    public synchronized void set(String name, int value){
+        if (!this.flag){
+            try {
+                super.wait();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        this.setName(name);
+        this.setValue(value);
+        this.flag = false;
+        super.notify();
+    }
+    public void setValue(int value) {
+        this.value = value;
+    }
+}
+#+end_src
+这个就是最原始的多线程案例，线程的等待或者唤醒都是由我们自己书写。
+
+* 多线程的深入了解
+** 优雅的停止线程
+1. ~stop()~ 停止多线程，废除了
+2. ~destory()~ 销毁线程，废除了
+3. ~suspend()~ 挂起多线程
+4. ~resume()~ 恢复挂起的线程
+由于这些方法可能会导致线程的死锁，所以从 JDK1.2 开始都废除了（不建议使用。
+** 守护线程
+在多线程里面可以进行守护线程的定义，也就是说如果现在主线程的程序或者其它的线程还在执行的时候,线程将一直存在，并且运行在后台状态。
+1. 设置为守护线程： ~public final void setDaemon(boolean on);~
+2. 判断是否为守护线程： ~public final boolean is Daemon();~
+#+begin_src java
+public class DaemonUsage {
+    public static void main(String[] args) {
+        System.out.println("守护线程的使用");
+        Thread userThread = new Thread(() -> {
+            for (int x = 0; x < 100; x++) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                System.out.println(Thread.currentThread().getName() + "x=" + x);
+            }
+        }, "用户线程");
+        Thread daemonThrad = new Thread(() -> {
+            for (int x = 0; x < 200; x++) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                System.out.println(Thread.currentThread().getName() + "x=" + x);
+            }
+        }, "守护进程");
+        daemonThrad.setDaemon(true);
+        userThread.start();
+        daemonThrad.start();
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        for(int x =0;x<100;x++){
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            System.out.println(x);
+        }
+
+    }
+}
+
+#+end_src
+注释 ~daemonThrad.setDaemon(true)~ 或者设置主线程 ~main~ 的 ~Thread.sleep()~ 的睡眠时间，会更好的理解守护线程，可以发现所有的守护线程都是围绕在用户线程(~userThread~ ，严格来说还是 ~main~ 线程)的周围，如果程序执行完毕了，守护线程也就消失了在整个的 JVM 里面最大的守护线程就是 GC 线程。
+程序执行中 GC 线程会一直存在，如果程序执行完毕，GC 线程也将消失。
+** volatile 关键字
+在多线程中， ~volatile~ 关键字主要是在属性定义上使用的，表示此属性是直接数据操作，而不进行副本的拷贝处理（不是同步属性），可以在多线程处理中加快速度。如图
+[[./volatile.png]]
+volatile 与 synchronized 的区别
+1. volatile 主要在属性上使用，而 synchronized 是在方法或者代码块上使用
+2. volatile 无法描述同步处理，只是一种内存的直接处理，synchronized 是实现同步的。

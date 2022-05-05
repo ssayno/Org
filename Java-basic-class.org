@@ -1,0 +1,34 @@
+#+TITLE: Java Basic Class
+#+CATEGORY: Java
+#+STARTUP: show2levels
+* Preface
+这个博客记录 Java 的基本类库
+** System 类
+我们在从学习 Java 开始，一直使用着这个类， ~System.out.println()~ 输出方法。[[https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/System.html][System 类的官方文档]]
+*** 常用方法
+1. 数组拷贝： ~public static void arraycopy(Object src, int srcPos, Object dest, int destPos, int length)~
+2. 返回当前时间的毫秒数： ~public static long currentTimeMillis()~ ， *通常用这个来计算操作耗时计算*
+   #+begin_src java
+public class Basic {
+    public static void main(String[] args) {
+        long start = System.currentTimeMillis();
+        long spend = System.currentTimeMillis() - start;
+        for(int x=0;x<1000;x++){
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            System.out.println(Thread.currentThread().getName() + "运行" + x);
+        };
+        System.out.println("花费了" + spend + "毫秒");
+    }
+}
+   #+end_src
+3. GC: ~public static void gc()~ 实际上就是 ~Runtime.getRuntime().gc()~
+
+*** 关于 System 的输出
+有时候想要像 C语言那样进行输出格式化字符串，那么需要使用 ~System.out.printf()~ 详情查看 [[https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/io/PrintStream.html][官方文档]]。
+1. ~print()~ 是没有返回值，而且默认不换行。
+2. ~println()~ 没有返回值，默认换行。
+3. ~printf()~ 像 C语言一样格式化输出字符串。

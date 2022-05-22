@@ -1,0 +1,73 @@
+#+TITLE: Reflect
+* Preface
+关于 Java 中的反射机制
+** YES Java 反射机制
+在 Java 中，之所以有如此多的开源技术支撑，很大的原因的 Java 的最大特征，反射机制，这个在日后项目的开发中非常的重要。 *所有的技术实现的目标只有一个：重用性。*
+对于 *反射技术* ，首先考虑“正”和“反”， *所谓“正”的操作，就是使用类的时候，先导入程序所在的包，人，然后进行实例化，然后调用方法。“反”就是根据实例化对象反推出类型。*
+#+begin_src java
+import java.util.Date;
+
+public class Test {
+    public static void main(String[] args) {
+        Date date = new Date();
+        System.out.println(date.getClass());
+    }
+}
+#+end_src
+上述就是通过实例化对象获取对象所属类型（说到底就是 ~getClass()~ 方法。
+*** Java 反射编程
+Class 类的实例化操作，反射之中的所有核心操作都是通过 Class 类进行操作，有如下三种方式完成 Class 类的实例化，从 JDK1.5 之后加入了泛型的操作，（ *这三种方式都是需要掌握的*
+#+begin_src java
+public final class Class<T>
+extends Object
+implements Serializable, GenericDeclaration, Type, AnnotatedElement, TypeDescriptor.OfField<Class<?>>, Constable
+#+end_src
+**** 通过 Object 类支持
+Object 类可以通过实例化对象获得 Class， ~public final Class<?> getClass()~
+#+begin_src java
+import java.util.Date;
+
+public class Test {
+    public static void main(String[] args) {
+        Date date = new Date();
+        Class<? extends Date> cls = date.getClass();
+        System.out.println(cls);
+        System.out.println(cls.getName());
+    }
+}
+#+end_src
+
+#+RESULTS:
+: class java.util.Date
+: java.util.Date
+
+这个方式有个不是缺点的缺点，如果想要 Class，那么必须实例化对象。
+**** JVM 原生支持
+~类.class~ ：必须导入程序相应的包
+#+begin_src java
+import java.util.Date;
+
+public class Test {
+    public static void main(String[] args) {
+        Class<? extends Date> cls2 = Date.class;
+        System.out.println(cls2);
+        System.out.println(cls2.getName());
+    }
+}
+
+#+end_src
+
+**** Class 类支持
+在 Class 中提供一个操作的 ~static~ 方法，当初我们学 ~JDBC~ 的时候使用过， ~Class.forName(String className)~
+#+begin_src java
+import java.util.Date;
+
+public class Test {
+    public static void main(String[] args) {
+        Class<?> cls3 = Class.forName("com.itheima.GServlet");
+        System.out.println(cls3);
+        System.out.println(cls3.getName());
+    }
+}
+#+end_src
+如果此时使用程序不存在，会出现 ~java.lang.ClassNotFoundException~ 。

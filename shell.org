@@ -1,6 +1,9 @@
+#+BLOG: myblog
+#+POSTID: 176
 #+TITLE: Shell
 #+DATE: [2021-11-26 Fri 19:55]
 #+STARTUP: overview
+#+CATEGORY: Shell
 * Preface
 ** Wildcards and Regex <<W-A-R>>
 There are different.
@@ -162,9 +165,10 @@ echo "${table%%.*}"
 myname="www.sayno.work"
 echo "${myname/work/com}"
     #+end_src
-12. ~${parameter:-word}~ If value of ~parameter~ if null, then return ~word~.
-13. ~${parameter:=word}~ If value of ~parameter~ if null, then set ~word~ to ~parameter~, and return ~word~.
-14. ~~
+12. ~${parameter:-word}~ If value of ~parameter~ is null, then return ~word~.
+13. ~${parameter:=word}~ If value of ~parameter~ is null, then set ~word~ to ~parameter~, and return ~word~.
+14. ~${parameter:?word}~ If value of ~parameter~ is null, output the word in ~/dev/stderr/~.
+15. ~${parameter:+word}~ If value of ~parameter~ is null, do nothing ,otherwise, return ~word~.
 *** Example
 #+begin_src shell
 for i in {1..100}; do
@@ -199,6 +203,7 @@ type awk
 #+end_src
 For example, if you use external command like ~awk~.
 [[./shell.png]]
+
 *You can use command ~compgen -b~ see all built-in commands*
 ** time
 #+begin_src shell
@@ -252,7 +257,7 @@ echo $num,$age,$age2
 | 1 | 3 | 201 |
 
 ** xargs
-
+The xargs command is used in a UNIX shell to convert input from standard input into arguments to another command.
 ** Conditionnal test
 Four format.
 1. ~test expression~ =test= is a built-in command. *If test pass, return 0, otherwise return value is't 0.* <<test>>
@@ -319,3 +324,5 @@ fi
 ** Boolean value operation
 1. Use ~&&~, ~||~, and ~!~ in ~[[ expression ]]~ ([[db][Double brackets]]) and ~(())~ ([[dp][Double Parenthese]]).
 2. Use ~-a~, ~-o~, and ~!~ in ~[]~ ([[sb][Single bracket]]) and ~test~ ([[test][test]])
+
+# ./shell.png http://www.sayno.work/wp-content/uploads/2022/05/shell.png

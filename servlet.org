@@ -29,7 +29,7 @@ Servlet 是 Java Web 的三大组件之一（Filter、Listener），它属于动
 2. ~public String getServletInfo() {}~ 获取 Servlet 的信息（基本上用不上
 *** ServletConfig: getServletConfig() 函数的返回值
 ServletConfig 其实是一个接口 ~interface ServletConfig~ ，本质上是一个接口，解析的是 ~web.xml~ 的内容
-#+begin_src java
+#+begin_src xml
 import java.util.Enumeration;
 
 public interface ServletConfig {
@@ -170,5 +170,5 @@ protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws Se
 
 * Picture
 [[./servlet.png]]
-查看 Servlet 的细节使用 [[Servlet-details][Servlet details]]
+查看 Servlet 的细节使用 [[Servlet-details][Servlet details ]]
 # ./servlet.png http://www.sayno.work/wp-content/uploads/2022/05/servlet.png

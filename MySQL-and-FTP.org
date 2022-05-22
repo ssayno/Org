@@ -2,6 +2,7 @@
 #+POSTID: 148
 #+DATE: [2022-04-27 Wed 12:25]
 #+TITLE: MySQL And FTP
+#+CATEGORY: MySQL
 * Preface
 Write down how to build MySQL and FTP server in Lighthouse.
 ** MySQL
@@ -46,3 +47,4 @@ Today, I will write down how to build FTP server in my lighthouse.
 5. ~sudo passwd ftpuser~ set password for new user.
 6. Then, choose the directory as the default directory when you login successfully, to me, I set the ~$HOME~ as the default directory.
 7. ~sudo vim /etc/vsftpd/vsftpd.conf~ configure FTP server.
+Refer to this [[http://www.sayno.work/hardware/personal-server/#orgee9d1f2][note]].

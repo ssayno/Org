@@ -1,0 +1,80 @@
+#+TITLE: Filter
+
+* Preface
+过滤器是对一组资源进行统一的操作（jsp、servlet、css、html）的前面执行， *他可以让请求得到目标资源，也可以不让请求得到（过滤器有拦截请求的能力）* ，最明显的是登录，登录成功之后才能访问某个 Servlet。
+* 过滤器如何编写
+1. 写一个类实现 ~Filter~ 接口(三大周期函数)
+   #+begin_src java
+@Override
+public void init(FilterConfig filterConfig) throws ServletException {
+    // 创建之后马上执行，用来初始化
+}
+
+@Override
+public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
+    // 每次过滤都会执行
+}
+
+@Override
+public void destroy() {
+    // 销毁之前执行，用来对非内存资源进行释放，一般用不上
+}
+   #+end_src
+2. 在 ~web.xml~ 进行配置(和 servlet 的配置十分相似，只是 *url-pattern 中通常是使用通配符，对整个网页过滤* ，例如 ~<url-pattern>/*</url-pattern>~)， *拦截之后，原有的页面不会输出，应该是有相关的限制*
+   #+begin_src xml
+<filter>
+    <filter-name>wolaile</filter-name>
+    <filter-class>com.itheima.NFilter</filter-class>
+</filter>
+<filter-mapping>
+    <filter-name>wolaile</filter-name>
+    <url-pattern>/*</url-pattern>
+</filter-mapping>
+   #+end_src
+3. ~Filter~ 是单例的
+** FilterConfig
+FilterConfig 和 ServletConfig 类似的。
+#+begin_src java
+public interface FilterConfig {
+    String getFilterName();
+
+    ServletContext getServletContext();
+
+    String getInitParameter(String var1);
+
+    Enumeration getInitParameterNames();
+}
+#+end_src
+** FilterChain
+#+begin_src java
+public interface FilterChain {
+    void doFilter(ServletRequest var1, ServletResponse var2) throws IOException, ServletException;
+}
+#+end_src
+拦截的反面，放行(放行就相当于调用目标 Servlet 的 ~service~ 方法)
+* 多个过滤器的执行顺序
+当有多个过滤器的时候，
+1. ~FilterChain#doFilter()~ 执行目标资源，或者是执行下一个过滤器(如果没有下一个过滤器进行过滤，那么执行目标资源，如果有，那么执行下一个过滤器)
+* 过滤器的四种拦截方式
+1. 请求 ~REQUEST~
+2. 转发 ~FORWARE~
+3. 包含 ~INCLUDE~
+4. 错误 ~ERROR~
+在 filter-mapping 标签中进行配置(默认情况下是 ~REQUEST~)
+#+begin_src xml
+<filter-mapping>
+    <filter-name>wolaile</filter-name>
+    <url-pattern>/*</url-pattern>
+    <dispatcher>FORWARD</dispatcher>
+    <dispatcher>INCLUDE</dispatcher>
+    <dispatcher>ERROR</dispatcher>
+    <dispatcher>REQUEST</dispatcher>
+</filter-mapping>
+#+end_src
+在 ERROR 中的是 ~web.xml~ 中的
+#+begin_src xml
+<error-page>
+    <error-code>404</error-code>
+    <location>404.jsp</location>
+</error-page>
+#+end_src

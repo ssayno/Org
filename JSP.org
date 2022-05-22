@@ -1,0 +1,67 @@
+#+TITLE: Jsp
+* Preface
+关于 JSP 的学习
+* JSP 基础
+** JSP 的作用
+*** Servlet
+1. 缺点：HTML 是静态页面，需要大量的 response.getWriter().print('<html>');
+2. 有点：动态资源，可以编程
+*** HTML
+1. 优点：不用为输出 HTML 标签发愁
+2. 缺点：HTML 是静态网页，无法编程
+*** JSP
+1. 优点：在原有的 HTML 的基础上添加 Java 脚本，构成 JSP 页面。
+2. JSP 本身就是封装好的 Servlet
+** Servlet 和 JSP 的分工
+*** JSP
+1. 作为请求发起页面，例如显示表单、超链接
+2. 作为请求结束页面，例如现实数据
+*** Servlet
+1. 作为请求中处理数据的环节
+** JSP 的组成
+1. JSP = HTML + Java 脚本 + JSP 标签（指令）
+2. JSP 中无需创建就可以使用的对象一共有九个，被称为 *九* 大内置对象，例如
+   *request 对象和 out 对象*
+3. 3 种 Java 脚本
+   1. ~<%...%>~ Java 代码片段（常用），用于定义多条 Java 语句
+   2. ~<%=...%>~ Java 表达式，用于输出（常用），用于输出一条表达式的结果
+   3. ~<%!...%>~ 声明，用来创建类的成员变量和成员方法（基本不用），这里声明的是
+      成员变量，每次访问都是存在（可以使用 ~this~ 来调用成员变量
+4. ~<%--...-%>~ JSP 中的注释，不会发送到客户端。
+5. ~<!--...-->~ HTML 中的注释，会发送到客户端。
+** JSP 原理
+#+begin_quote
+JSP 其实是一种特殊的 Servlet, 当 JSP 页面第一次被访问的时候，服务器（tomcat）会
+把 JSP 编译为一个 Java（一个 Servlet 类），接着创建类对象，调用 ~service()~ 方法
+#+end_quote
+
+** Cookie
+1. Cookie 是 HTTP 协议指定的，先由服务器保存 Cookie 到浏览器，再下次浏览器请求服
+   务器时候把上一次请求得到的 Cookie 再归还给服务器
+2. 由服务器创建保存到客户端浏览器的键值对，服务器保存 Cookie 的响应头：
+   ~Set-Cookie:~ 里面添加相应的键值对
+3. 当浏览器请求服务器，会把该服务器保存的 Cookie 随请求发送给服务器，浏览器归还
+   Cookie 的请求头： ~Cookie: name=xxx; age=xxx~
+4. HTTP 协议规定
+   1. 一个 Cookie 最大 4 KB
+   2. 一个服务器最多向浏览器保留 20 个 Cookie
+   3. 一个浏览器最多可以保存 300 个 Cookie
+5. 浏览器之间的竞争很大，所以很多浏览器都会在一定的范围内违反 HTTP 规定
+6. Cookie 不是很安全
+7. Cookie 的常用属性介绍: [[https://juejin.cn/post/6863377752939036679][Cookie]].
+
+** JavaWeb 中使用 Cookie
+1. 使用 ~response.addCookie()~ 添加一个 Cookie 对象，由 JavaWeb 提供。
+2. 使用 ~request.getCookies()~
+** HttpSession 概述
+1. HttpSession 是由 JavaWeb 提供的，用来 *会话跟踪* 的类， session 是服务器端的
+   对象，保存在服务器端。
+2. HttpSession 是 Servlet 的四大域之一，所以也有
+   ~setAttritube()~, ~getAttritube()~, ~removeAttritube()~ 方法。
+3. HttpSession 底层依赖 Cookie, 或者 URL 重写。
+
+** JSP 动态生成图片
+1. 设置图片缓冲区
+2. 设置寬高
+3. 得到这个图片的绘制环境（得到画笔）
+4. 保存上传

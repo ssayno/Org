@@ -1,0 +1,43 @@
+#+TITLE: Listener
+* Listener 监听器概述
+监听器总体上用的不多， ~ServletContextListener~ 用的算是比较多的。
+Listener: 监听器，在 JavaWeb 中被监听的事件源和监听类型为
+1. Servletcontext
+   1. 生命周期监听： ~ServletContextListener~ 有两个方法，一个在初始化的时候调用，一个在死亡的时候调用。
+   2. 属性监听： ~ServletContextAttributeListener~ 有三个方法，添加属性、替换属性、移除属性的时候调用。
+2. HttpSession
+   1. 生命周期监听： ~HttpSessionListener~ 有两个方法，一个在初始化的时候调用，一个在死亡的时候调用。
+   2. 属性监听： ~HttpSessionAttributeListener~ 有三个方法，添加属性、替换属性、移除属性的时候调用。
+3. ServletRequest
+   1. 生命周期监听： ~ServletRequestListener~ 有两个方法，一个在初始化的时候调用，一个在死亡的时候调用。
+   2. 属性监听： ~ServletRequestAttributeListener~ 有三个方法，添加属性、替换属性、移除属性的时候调用。
+即四大域中的三个，还有一个是（PageContext
+* JavaWeb 中完成监听器
+1. 写一个监听器类型，要求必须实现某个监听器接口
+   #+begin_src java
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
+
+public class BLisenter implements ServletContextListener {
+    @Override
+    public void contextInitialized(ServletContextEvent servletContextEvent) {
+        System.out.println("监听器调用，初始化后开始监听");
+    }
+
+    @Override
+    public void contextDestroyed(ServletContextEvent servletContextEvent) {
+        System.out.println("监听器调用，销毁之后调用");
+    }
+}
+   #+end_src
+2. 注册，在 ~web.xml~ 中完成配置即可
+   #+begin_src xml
+    <listener>
+        <listener-class>com.itheima.BLisenter</listener-class>
+    </listener>
+   #+end_src
+* 事件对象
+1. ServletContextEvent: ~ServletContext getServletContext()~
+2. HttpSessionEvent: ~HttpSession getSession()~
+3. ServletRequestEvent
+* 属性监听器

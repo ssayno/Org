@@ -1,0 +1,120 @@
+#+BLOG: myblog
+#+POSTID: 184
+#+CATEGORY: Perl
+#+DATE: [2022-05-22 Sun 23:27]
+#+TITLE: Scope
+* Preface
+We will discuss the scope statement in Perl. Perl is a weakly typed language, so
+you don't need set variable type when you create it. You should add ~use strict~
+on the top of you script, then you must add scope statement before you create a
+variable.
+** Global scope statement
+If you not add ~use strict~ in your script, all the variables you create is
+global variable. But this operation is't recommend.
+1. If you want to create the globale varibale in modern perl script, you can use
+   ~our~ as prefix.
+#+begin_src perl :results output
+#!/usr/bin/perl -w
+use strict;
+use warnings;
+our $name = "zgl";
+sub one{
+    $name = "zt";
+    print "$name";
+}
+print "$name\n";
+one();
+#+end_src
+** Lexical scope statement
+There are three ways as prefix to create a scope variable.
+#+begin_quote
+To oversimplify slightly:
+our confines names to a scope, local confines values to a scope, and my confines
+both names and values to a scope. (And state is just like my, but it defines the
+scope a bit differently.)
+#+end_quote
+*** Using ~my~
+Using ~my~ to create a local variable is the most common way.
+#+begin_src perl :results output
+#!/usr/bin/perl -w
+use strict;
+use warnings;
+print "\n", '-' x 40, "\n";
+my @array =  qw/1 3 9 4/;
+for my $item (@array){
+    print $item, "|"
+}
+sub two{
+    my @array = (1,4,5,6);
+    for my $item (@array){
+        print $item, "|"
+    }
+}
+# print $item;
+print "\b\n";
+print "\n", '-' x 40, "\n";
+two();
+print "\b\n";
+#+end_src
+
+As above code, you can know:
+1. create a array ~@array~ and scalar ~$item~ with ~my~, the variable ~$item~ just can be used in for code block, if you want to output it out the for code block, perl interpreter will give you warning information like this:
+   #+begin_quote
+   Global symbol "$item" requires explicit package name (did you forget to declare "my $item"?) at scope_learn.pl line 15.
+Execution of scope_learn.pl aborted due to compilation errors.
+   #+end_quote
+2. create a subroutines(function), in this subroutines, we create a same array variable ~@array~ and ~$item~ with ~my~, after you execute this script, you can see there are difference between two array.
+3. If you delete ~my @array = (1,4,5,6)~ in subroutines two, you will find the result is same.
+So, you can know, use ~my~ to define a variable is scope, it can be use in its lower level and same level.
+*** Using ~state~
+Use ~state~ to define a variable just like use ~static~ to define a variable in ~C~ language, it just initialize once.(If you want to use this, you should add ~use feature "state"~ on the top of your script or add ~use v<version>~, ~<version>~ must greater than 5.10)
+#+begin_src perl :results output
+#!/usr/bin/perl -w
+use strict;
+use warnings;
+use feature "state";
+sub three{
+    state $count = 0;
+    $count++;
+    print $count, "\n";
+}
+three();
+three();
+three();
+three();
+three();
+#+end_src
+*** Using ~local~ (Dynamically Scoped Variables)
+This statement is interesting. Using a local operator on a global variable gives it a temporary value each time local is executed, but it does not affect that variable’s global visibility. When the program reaches the end of that dynamic scope, ~this temporary value is discarded~, ~and the original value is restored~.
+#+begin_src perl :results output
+#!/usr/bin/perl -w
+use strict;
+use warnings;
+use feature "state";
+our $name = "zgl";
+sub one{
+    $name = "zt";
+    print "$name";
+}
+one();
+print "\n", "$name", "\n";
+sub four{
+    five();
+    local $name = "dashuaige";
+    five();
+    print $name, "\n";
+}
+sub five{
+    print $name, "\n";
+}
+four();
+#+end_src
+
+#+RESULTS:
+: zt
+: zt
+: zt
+: dashuaige
+: dashuaige
+
+Perl(glue language) is funny, it draws on the strengths of many other languages, you can treat it as a toy,  when you are free, you can read it origin manual.

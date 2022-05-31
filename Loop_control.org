@@ -1,0 +1,122 @@
+#+BLOG: myblog
+#+POSTID: 187
+#+DATE: [2022-05-24 Tue 18:21]
+#+TITLE: Loop_control
+#+CATEGORY: Perl
+* Preface
+Loop control in perl language.
+** next
+It is very simple, its function just like next in AWK, over up this loop, and go to next loop.(Execute the condition.)
+#+begin_src perl :results output
+#!/usr/bin/perl -w
+use v5.34;
+my $count = 0;
+FIRST: while($count++ < 10){
+    if($count == 4){
+        next FIRST;
+    }
+    print '$count', " $count is less than 10.\n";
+}
+print "-" x 25, "\n";
+#+end_src
+
+** last
+It's very easy, too. Go to the last of the loop.
+#+begin_src perl :results output
+use v5.34;
+my $count = 0;
+SECOND: while($count < 10){
+    if($count == 4){
+        last SECOND;
+    }
+    print '$count', " $count is less than 10.\n";
+}continue{
+    $count++;
+}
+print "-" x 25, "\n";
+#+end_src
+
+#+RESULTS:
+: $count 0 is less than 10.
+: $count 1 is less than 10.
+: $count 2 is less than 10.
+: $count 3 is less than 10.
+: -------------------------
+
+** redo
+This operator may not be well understood.
+1.  Before We start, we create a file named =loop_control.txt=, its content is following.
+   #+begin_verse
+Everyone hate\
+the people deep inside.
+What I want to say is\
+keep you self,\
+and follow you heart.
+   #+end_verse
+   Then execute following code:
+   #+begin_src perl :results output
+#!/usr/bin/perl -w
+use v5.34;
+open(HANDLE, "<:utf8", "loop_control.txt") || die "Can't open loop_control.txt";
+while(<HANDLE>){
+    chomp;
+    if(s/\\$/ /){
+        $_ .= <HANDLE>;
+        redo unless eof;
+    }
+    print $_,"\n";
+}
+ #+end_src
+2. Second example is:
+   #+begin_src perl :results output
+#!/usr/bin/perl -w
+use v5.34;
+my $count = 0;
+SECOND: while($count++ < 10){
+    if($count == 4){
+        print "blockage\n";
+        redo SECOND;
+    }
+    print '$count', " $count is less than 10.\n";
+}
+   #+end_src
+   Before you run this script, you should run in Emacs org-mode, it's a infinite loop.
+3. Third example is:
+   #+begin_src perl :results output
+#!/usr/bin/perl -w
+use v5.34;
+my $count = 0;
+SECOND: while($count < 10){
+    if($count == 4){
+        print "blockage\n";
+        redo SECOND;
+    }
+    print '$count', " $count is less than 10.\n";
+}continue{
+    $count++;
+}
+   #+end_src
+   Also, don't run this script in Emacs org-mode...
+
+When you execute above scripts, and observe their result, you will know
+1. The ~redo~ operator restart the loop block without evaluating the conditional again, and if this loop have ~continue~ block, it isn't execute also.
+
+** Others
+If you can't understand the ~continue~ block, here is an example.
+#+begin_src perl :results output
+for(my $i = 0; $i<10; $i++){
+    # loop block
+}
+=pod
+use while loop
+=cut
+{
+    my $i;
+    while($i<10){
+        # loop block
+    }continue{
+        $i++;
+    }
+}
+#+end_src
+In the above code, ~for~ loop and ~while~ loop have same function. Because ~$i~ is a local variable in ~for~ loop, so you should use ~{}~ to wrap the ~while~ loop to let ~$i~ be a local variable.

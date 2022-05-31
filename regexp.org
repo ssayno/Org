@@ -1,0 +1,33 @@
+#+TITLE: Regexp
+* Preface
+Regex expression
+** substitute
+1. If you use ~r~ modifiers, the left value is unchange, and return the changed value
+   #+begin_src perl :results output
+#!/usr/bin/perl -w
+use English;
+BEGIN{
+    $ORS="\n";
+    $OFS=" ";
+}
+use warnings;
+use strict;
+my $name = "zglhaoshuaihao";
+my $test1 = $name =~ s/hao//gr;
+print $name, $test1;
+   #+end_src
+
+2. If not use ~r~ modifiers, the left value will chane, and return the times of substitute.
+   #+begin_src perl :results output
+#!/usr/bin/perl -w
+use English;
+BEGIN{
+    $ORS="\n";
+    $OFS=" ";
+}
+use warnings;
+use strict;
+my $name = "zglhaoshuaihao";
+my $test2 = $name =~ s/hao//g;
+print $name, $test2;
+   #+end_src

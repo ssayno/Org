@@ -1,0 +1,4 @@
+#+TITLE: Crontab
+* Preface
+How to use crontab on Arch Linux. First, command ~crontab~ isn't exist on Arch Linux, because Arch Linux think they can do more automatical thing, so you should install above all with command ~sudo pacman -S cronie~.
+1. If you want the output of crontab file to your terminal, you should redirect the output to your tty now.(The result of command ~tty~). In other words, you just need add command ~> tty~ at the end of script.

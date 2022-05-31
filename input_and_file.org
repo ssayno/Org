@@ -1,0 +1,16 @@
+#+TITLE: Input And File
+* Preface
+1. If you have a variable which is undefined, you can use ~defined~ function to judge it, if you not, it will give you some error information like ~Use of uninitialized value in print at 19.pl line 26, <STDIN> line 1~
+   #+begin_src perl :results output
+my $name;
+if(defined $name){
+    print 'Variable $name', " is defined";
+}else{
+    print 'Variable $name', " is undefined";
+}
+   #+end_src
+
+2. If you want to use ~sort~ function for hash
+   1. ~foreach (sort{$a <=> $b} keys %hash)~ for keys, ~<=>~ is used for number, if you want to use for string, change ~<=>~ to ~cmp~
+   2. ~foreach (sort{$hash{$a} <=> $hash{$b}} keys %hash)~ for value, ~<=>~ is used for number, if you want to use for string, change ~<=>~ to ~cmp~
+3. If you want to use ~$NR~ just like ~$.~ (or more others like this), you should add ~use English~ on the top of you script.

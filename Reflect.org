@@ -71,3 +71,21 @@ public class Test {
 }
 #+end_src
 如果此时使用程序不存在，会出现 ~java.lang.ClassNotFoundException~ 。
+
+*** Java 反射编程实例
+获取 Class 类的之后
+1. JDK1.9 之前，Class 类提供了一个类的实例化方法 ~newInstance()~ (Deprecated)，只能够调用无参构造方法.
+2. JDK1.9 之后，Class 类提供了 ~clazz.getDeclaredConstructor().newInstance()~.
+*** Java 反射与类的操作
+在反射机制的处理过程之中不仅仅只是一个实例化对象的处理操作,更多的情况下还有类的组成结构操作,任何一个类的基本组成结构:父类(父接口)、包、属性、方法(构造方法、普通方法)。
+**** 获取父类信息
+通过 Class 类的相关操作
+1. 包名称 ~public Package getPackage()~
+2. 父类的定义 ~public Class<? super T> getSuperclass()~
+3. 父接口的定义 ~public Class<?>[] getInterfaces()~
+获取一个类的对象之后，可以获取该类的一切继承信息。
+**** 调用构造方法
+1. 获取所有构造方法 ~public Constructor<?>[] getDeclaredConstructors() throws SecurityException~
+2. 获取参数构造方法 ~public Constructor<T> getDeclaredConstructor(Class<?>... parameterTypes) throws NoSuchMethodException, SecurityException~
+3. 优先使用无参构造，然后使用 setter 或者 getter 方法进行设置和获取属性。
+**** 调用普通方法
